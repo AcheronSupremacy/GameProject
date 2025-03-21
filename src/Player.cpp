@@ -97,7 +97,6 @@ void Player::handleCollisions(const std::vector<Platform>& platforms) {
     for (const auto& platform : platforms) {
         SDL_Rect intersect;
         if (SDL_IntersectRect(&rect, &platform.rect, &intersect)) {
-            // Determine collision direction
             bool horizontalCollision = (intersect.w < intersect.h);
             bool fromTop = (rect.y + rect.h - intersect.h <= platform.rect.y);
             bool fromLeft = (rect.x + rect.w - intersect.w <= platform.rect.x);
