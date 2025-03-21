@@ -3,8 +3,9 @@
 //
 #include "Player.hpp"
 #include <algorithm>
+#include "Game.hpp"
 
-Player::Player(int x, int y) :
+Player::Player(int x, int y, int w, int h) :
     rect{x, y, 32, 32},
     velocityX(0),
     velocityY(0),
@@ -14,9 +15,24 @@ Player::Player(int x, int y) :
     moveSpeed(400.0f),
     airResistance(0.8f),
     groundFriction(0.7f),
-    terminalVelocity(1200.0f) {}
+    terminalVelocity(1200.0f),
+    jumpCooldown(0.3f),
+    jumpTimer(0.0f),
+    dashSpeed(5000.0f),
+    dashDuration(0.2f),
+    dashCooldown(0.5f),
+    dashTimer(0.0f),
+    isDashing(false),
+    wallSlideSpeed(150.0f),
+    wallJumpForce(500.0f),
+    wallJumpHorizontalForce(300.0f),
+    isWallSliding(false),
+    canDash(true),
+    onLeftWall(false),
+    onRightWall(false) {}
 
 void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
+    if (jumpTimer > 0.0f) jumpTimer -= deltaTime;
     if (isDashing) {
         dashTimer -= deltaTime;
         if (dashTimer <= 0) {
@@ -39,7 +55,7 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
             velocityX *= airResistance;
         }
 
-        if (!isWallSliding) {
+        if (!isWallSliding&& !isDashing) {
             velocityY = std::min(velocityY + gravity * deltaTime, terminalVelocity);
         }
     }
@@ -51,25 +67,29 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
     handleCollisions(platforms);
     handleWallSlide(deltaTime);
 
+    rect.x = std::clamp(rect.x, 0, LEVEL_WIDTH - rect.w);
+    rect.y = std::clamp(rect.y, 0, LEVEL_HEIGHT - rect.h);
     isGrounded = (rect.y == prevRect.y && velocityY >= 0);
 }
 
+void Player::moveLeft() { velocityX = -moveSpeed; }
+void Player::moveRight() { velocityX = moveSpeed; }
+void Player::stopMoving() { velocityX = 0; }
+
+void Player::jump() {
+    if (isGrounded) {
+        velocityY = jumpForce;
+        isGrounded = false;
+        jumpTimer = jumpCooldown;
+    }
+}
+
 void Player::dash() {
-    if (canDash && !isGrounded) {
+    if (canDash && dashTimer <= 0.0f) {
         isDashing = true;
         canDash = false;
         dashTimer = dashDuration;
-
-        if (SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_A]) {
-            velocityX = -dashSpeed;
-        }
-        else if (SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_D]) {
-            velocityX = dashSpeed;
-        }
-        else {
-            velocityX = dashSpeed;
-        }
-
+        velocityX = (velocityX < 0) ? -dashSpeed : dashSpeed;
         velocityY = 0;
     }
 }
@@ -78,7 +98,6 @@ void Player::handleWallSlide(float deltaTime) {
     if ((onLeftWall || onRightWall) && !isGrounded && velocityY > 0) {
         isWallSliding = true;
         velocityY = wallSlideSpeed;
-
         velocityX *= 0.9f;
     }
     else {
@@ -94,19 +113,22 @@ void Player::handleWallSlide(float deltaTime) {
 }
 
 void Player::handleCollisions(const std::vector<Platform>& platforms) {
+    onLeftWall = false;
+    onRightWall = false;
+
     for (const auto& platform : platforms) {
         SDL_Rect intersect;
         if (SDL_IntersectRect(&rect, &platform.rect, &intersect)) {
-            // Determine collision direction
             bool horizontalCollision = (intersect.w < intersect.h);
             bool fromTop = (rect.y + rect.h - intersect.h <= platform.rect.y);
-            bool fromLeft = (rect.x + rect.w - intersect.w <= platform.rect.x);
 
             if (horizontalCollision) {
-                if (fromLeft) {
+                if (rect.x < platform.rect.x) {
                     rect.x -= intersect.w;
+                    onRightWall = true;
                 } else {
                     rect.x += intersect.w;
+                    onLeftWall = true;
                 }
                 velocityX = 0;
             } else {
@@ -118,13 +140,13 @@ void Player::handleCollisions(const std::vector<Platform>& platforms) {
                     rect.y += intersect.h;
                     velocityY = 0;
                 }
-                if (horizontalCollision) {
-                    if (fromLeft) {
-                        onRightWall = true;
-                    } else {
-                        onLeftWall = true;
                     }
+                }
             }
         }
-    }
+
+void Player::render(SDL_Renderer* renderer, const SDL_Rect& camera) {
+    SDL_Rect renderRect = {rect.x - camera.x, rect.y - camera.y, rect.w, rect.h};
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &renderRect);
 }

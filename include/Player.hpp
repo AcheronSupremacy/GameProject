@@ -13,21 +13,24 @@
 class Player {
 public:
     Player(int x, int y, int w, int h);
-    void update(float deltaTime const std::vector<Platform>& platforms);
-    void render(SDL_Renderer* renderer);
+
+    void update(float deltaTime, const std::vector<Platform>& platforms);
+    void render(SDL_Renderer* renderer, const SDL_Rect& camera);
+
+    void moveLeft();
+    void moveRight();
+    void stopMoving();
+    void jump();
     void dash();
-    void handleWallSlide(float deltaTime);
+    bool getIsGrounded() const { return isGrounded; }
 
     SDL_Rect rect;
 
-    bool isDashing = false;
-    bool isWallSliding = false;
-    bool canDash = true;
-    bool onLeftWall = false;
-    bool onRightWall = false;
+
+
 private:
     void handleCollisions(const std::vector<Platform>& platforms);
-
+    void handleWallSlide(float deltaTime);
     float velocityX;
     float velocityY;
     bool isGrounded;
@@ -38,14 +41,22 @@ private:
     float groundFriction;
     float terminalVelocity;
 
-    float dashSpeed = 1200.0f;
-    float dashDuration = 0.15f;
-    float dashCooldown = 1.0f;
-    float dashTimer = 0.0f;
+    float jumpCooldown;
+    float jumpTimer;
 
-    float wallSlideSpeed = 150.0f;
-    float wallJumpForce = 500.0f;
-    float wallJumpHorizontalForce = 300.0f;
+    float dashSpeed;
+    float dashDuration;
+    float dashCooldown;
+    float dashTimer;
+    bool isDashing;
+
+    float wallSlideSpeed;
+    float wallJumpForce;
+    float wallJumpHorizontalForce;
+    bool isWallSliding;
+    bool canDash;
+    bool onLeftWall;
+    bool onRightWall;
 };
 
 #endif
