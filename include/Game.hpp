@@ -38,6 +38,6 @@ const int PLAYER_WIDTH = 32;
 const int PLAYER_HEIGHT = 48;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
-const int LEVEL_WIDTH = WINDOW_WIDTH;
-const int LEVEL_HEIGHT = WINDOW_HEIGHT;
+const int LEVEL_WIDTH = 1280;
+const int LEVEL_HEIGHT = 1440;
 #endif //GAME_HPP
