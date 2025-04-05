@@ -15,6 +15,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/Player.hpp
         src/Player.cpp
         include/Platform.hpp
+        include/TextureManager.hpp
+        src/TextureManager.cpp
 )
 
 if (CMAKE_BUILD_TYPE MATCHES Release)

@@ -6,7 +6,7 @@
 #include "Game.hpp"
 
 Player::Player(int x, int y, int w, int h) :
-    rect{x, y, 32, 32},
+    rect{x, y, w, h},
     velocityX(0),
     velocityY(0),
     isGrounded(false),
@@ -20,7 +20,7 @@ Player::Player(int x, int y, int w, int h) :
     jumpTimer(0.0f),
     dashSpeed(5000.0f),
     dashDuration(0.2f),
-    dashCooldown(0.5f),
+    dashCooldown(0.2f),
     dashTimer(0.0f),
     isDashing(false),
     wallSlideSpeed(150.0f),
@@ -88,7 +88,7 @@ void Player::dash() {
     if (canDash && dashTimer <= 0.0f) {
         isDashing = true;
         canDash = false;
-        dashTimer = dashDuration;
+        dashTimer = dashCooldown;
         velocityX = (velocityX < 0) ? -dashSpeed : dashSpeed;
         velocityY = 0;
     }

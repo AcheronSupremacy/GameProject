@@ -4,6 +4,9 @@
 #include <algorithm>
 #include "Game.hpp"
 #include "SDL2/SDL.h"
+#include <iostream>
+#include <SDL_image.h>
+#include "TextureManager.hpp"
 
 Game::Game() {
     this->is_running = false;
@@ -23,6 +26,10 @@ void Game::init(const std::string &title, const int w, const int h) {
         this->is_running = true;
     } else {
         this->is_running = false;
+    }
+    int imgFlags = IMG_INIT_PNG;
+    if (!IMG_Init(imgFlags)) {
+        std::cerr << "SDL_image failed: " << IMG_GetError() << std::endl;
     }
 
     player = new Player(100, 100, PLAYER_WIDTH, PLAYER_HEIGHT);
@@ -66,8 +73,7 @@ void Game::handle_events() {
 void Game::update() {
     const Uint8* keystates = SDL_GetKeyboardState(nullptr);
     static Uint32 lastTime = SDL_GetTicks();
-    static bool spacePressedLastFrame = false;
-    bool spacePressedThisFrame = keystates[SDL_SCANCODE_SPACE];
+    static bool spaceWasReleased = true;
     static bool shiftWasReleased = true;
     float deltaTime = (SDL_GetTicks() - lastTime) / 1000.0f;
     lastTime = SDL_GetTicks();
@@ -76,11 +82,13 @@ void Game::update() {
     else if (keystates[SDL_SCANCODE_D]) player->moveRight();
     else player->stopMoving();
 
-    if (spacePressedThisFrame && !spacePressedLastFrame) {
-        player->jump();
-    }
-    spacePressedLastFrame = spacePressedThisFrame;
 
+    if (keystates[SDL_SCANCODE_SPACE]) {
+        if (spaceWasReleased) {
+            player->jump();
+            spaceWasReleased = false;
+        }
+    } else spaceWasReleased = true;
     if (keystates[SDL_SCANCODE_LSHIFT]) {
         if (shiftWasReleased) {
             player->dash();
@@ -105,6 +113,7 @@ void Game::render() const {
 }
 
 void Game::clean() const {
+    TextureManager::Clean();
     SDL_DestroyRenderer(this->renderer);
     SDL_DestroyWindow(this->window);
     SDL_Quit();

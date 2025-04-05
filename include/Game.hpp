@@ -31,13 +31,16 @@ private:
 
     SDL_Rect camera;
 
+    SDL_Texture* playerTexture;
+    SDL_Texture* platformTexture;
+
     void loadLevel();
     void centerCameraOnPlayer();
 };
 const int PLAYER_WIDTH = 32;
-const int PLAYER_HEIGHT = 48;
+const int PLAYER_HEIGHT = 32;
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 const int LEVEL_WIDTH = 1280;
-const int LEVEL_HEIGHT = 1440;
+const int LEVEL_HEIGHT = 720;
 #endif //GAME_HPP
