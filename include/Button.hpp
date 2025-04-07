@@ -43,5 +43,6 @@ private:
 
     SDL_Texture* textTexture = nullptr;
 
+
 };
 #endif //BUTTON_HPP

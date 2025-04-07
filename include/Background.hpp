@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+
 class Background {
 private:
     struct Layer {
