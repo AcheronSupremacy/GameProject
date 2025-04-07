@@ -18,9 +18,9 @@ Player::Player(int x, int y, int w, int h) :
     terminalVelocity(1200.0f),
     jumpCooldown(0.3f),
     jumpTimer(0.0f),
-    dashSpeed(2000.0f),
-    dashDuration(0.2f),
-    dashCooldown(0.2f),
+    dashSpeed(5000.0f),
+    dashDuration(0.15f),
+    dashCooldown(0.5f),
     dashTimer(0.0f),
     isDashing(false),
     wallSlideSpeed(150.0f),
@@ -34,10 +34,10 @@ Player::Player(int x, int y, int w, int h) :
 void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
     if (jumpTimer > 0.0f) jumpTimer -= deltaTime;
     if (isDashing) {
+        velocityY = 0;
         dashTimer -= deltaTime;
         if (dashTimer <= 0) {
             isDashing = false;
-            velocityY = 0;
             dashTimer = dashCooldown;
         }
     }
@@ -96,7 +96,7 @@ void Player::handleInput() {
             if (canDash && dashTimer <= 0.0f) {
                 isDashing = true;
                 canDash = false;
-                dashTimer = dashCooldown;
+                dashTimer = dashDuration;
                 velocityX = (velocityX < 0) ? -dashSpeed : dashSpeed;
                 velocityY = 0;
             }

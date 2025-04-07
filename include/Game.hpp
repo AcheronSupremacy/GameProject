@@ -32,7 +32,7 @@ private:
 
     SDL_Rect camera;
     float previousCameraX = 0;
-    float cameraSmoothing = 0.1f;
+    float cameraSmoothing = 0.5f;
 
     SDL_Texture* playerTexture;
     SDL_Texture* platformTexture;
