@@ -4,6 +4,7 @@
 
 #include "TextureManager.hpp"
 #include <iostream>
+#include <SDL_image.h>
 
 std::map<std::string, SDL_Texture*> TextureManager::textures;
 

@@ -4,6 +4,7 @@
 
 #ifndef GAME_HPP
 #define GAME_HPP
+#include "Background.hpp"
 #include "SDL2/SDL.h"
 #include "string"
 #include "Player.hpp"
@@ -18,7 +19,7 @@ public:
     void update();
     void render() const;
     void clean() const;
-
+    float calculateDeltaTime();
     [[nodiscard]] bool running() const { return this->is_running; }
 private:
     bool is_running;
@@ -36,11 +37,9 @@ private:
 
     void loadLevel();
     void centerCameraOnPlayer();
+
+    Background* background;
 };
-const int PLAYER_WIDTH = 32;
-const int PLAYER_HEIGHT = 32;
-const int WINDOW_WIDTH = 1280;
-const int WINDOW_HEIGHT = 720;
-const int LEVEL_WIDTH = 1280;
+const int LEVEL_WIDTH = 2560;
 const int LEVEL_HEIGHT = 720;
 #endif //GAME_HPP

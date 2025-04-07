@@ -63,9 +63,9 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
     SDL_Rect prevRect = rect;
     rect.x += static_cast<int>(velocityX * deltaTime);
     rect.y += static_cast<int>(velocityY * deltaTime);
-
-    handleCollisions(platforms);
+    handleCollisions(platforms, prevRect);
     handleWallSlide(deltaTime);
+
 
     rect.x = std::clamp(rect.x, 0, LEVEL_WIDTH - rect.w);
     rect.y = std::clamp(rect.y, 0, LEVEL_HEIGHT - rect.h);
@@ -112,7 +112,7 @@ void Player::handleWallSlide(float deltaTime) {
     }
 }
 
-void Player::handleCollisions(const std::vector<Platform>& platforms) {
+void Player::handleCollisions(const std::vector<Platform>& platforms, const SDL_Rect& prevRect) {
     onLeftWall = false;
     onRightWall = false;
 

@@ -23,13 +23,14 @@ public:
     void jump();
     void dash();
     bool getIsGrounded() const { return isGrounded; }
-
+    float getSpeed() const {return velocityX; }
+    int getPos() const {return rect.x;}
     SDL_Rect rect;
 
 
 
 private:
-    void handleCollisions(const std::vector<Platform>& platforms);
+    void handleCollisions(const std::vector<Platform>& platforms, const SDL_Rect& prevRect);
     void handleWallSlide(float deltaTime);
     float velocityX;
     float velocityY;

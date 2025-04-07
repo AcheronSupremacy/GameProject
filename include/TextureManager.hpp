@@ -6,7 +6,6 @@
 #define TEXTUREMANAGER_HPP
 #pragma once
 #include <SDL.h>
-#include <SDL_image.h>
 #include <string>
 #include <map>
 

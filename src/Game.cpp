@@ -5,7 +5,9 @@
 #include "Game.hpp"
 #include "SDL2/SDL.h"
 #include <iostream>
+#include <chrono>
 #include <SDL_image.h>
+#include "SDL_ttf.h"
 #include "TextureManager.hpp"
 
 Game::Game() {
@@ -31,14 +33,30 @@ void Game::init(const std::string &title, const int w, const int h) {
     if (!IMG_Init(imgFlags)) {
         std::cerr << "SDL_image failed: " << IMG_GetError() << std::endl;
     }
+    background = new Background(renderer, windowWidth, windowHeight);
+    background->addLayer("assets/background/background_layer_1.png",0.05f);
+    background->addLayer("assets/background/background_layer_2.png",0.15f);
+    background->addLayer("assets/background/background_layer_3.png",0.3f);
+    TTF_Init();
+    TTF_Font* font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 20);
 
-    player = new Player(100, 100, PLAYER_WIDTH, PLAYER_HEIGHT);
+    player = new Player(100, 100, 32, 32);
 
     loadLevel();
 
     camera = {0, 0, windowWidth, windowHeight};
 }
 
+float Game::calculateDeltaTime() {
+    using Clock = std::chrono::high_resolution_clock;
+    static auto lastTime = Clock::now();
+
+    auto currentTime = Clock::now();
+    float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+    lastTime = currentTime;
+
+    return std::min(deltaTime, 0.1f);
+}
 void Game::loadLevel() {
     platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH, 50);
 
@@ -58,15 +76,15 @@ void Game::centerCameraOnPlayer() {
 
 void Game::handle_events() {
     SDL_Event event;
-
-    SDL_PollEvent(&event);
-
-    switch (event.type) {
-        case SDL_QUIT:
-            this->is_running = false;
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_QUIT:
+                is_running = false;
             break;
-        default:
-            break;
+            default:
+                break;
+
+        }
     }
 }
 
@@ -75,8 +93,7 @@ void Game::update() {
     static Uint32 lastTime = SDL_GetTicks();
     static bool spaceWasReleased = true;
     static bool shiftWasReleased = true;
-    float deltaTime = (SDL_GetTicks() - lastTime) / 1000.0f;
-    lastTime = SDL_GetTicks();
+    float deltaTime = calculateDeltaTime();
 
     if (keystates[SDL_SCANCODE_A]) player->moveLeft();
     else if (keystates[SDL_SCANCODE_D]) player->moveRight();
@@ -95,14 +112,17 @@ void Game::update() {
             shiftWasReleased = false;
         }
     } else shiftWasReleased = true;
+    float previousX = player->rect.x;
     player->update(deltaTime, platforms);
+    float deltaX = player->rect.x - previousX;
+    background->update(deltaX);
     centerCameraOnPlayer();
 }
 
 void Game::render() const {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(this->renderer);
-
+    background->render();
     for (auto& platform : platforms) {
         platform.render(renderer, camera);
     }
@@ -113,6 +133,9 @@ void Game::render() const {
 }
 
 void Game::clean() const {
+    if (background) {
+        delete background;
+    }
     TextureManager::Clean();
     SDL_DestroyRenderer(this->renderer);
     SDL_DestroyWindow(this->window);
