@@ -46,7 +46,7 @@ void Background::update(float playerDeltaX) {
     }
 }
 
-void Background::render() {
+void Background::render() { //infinite scrolling background
     for (auto& layer : layers) {
         int posX = static_cast<int>(layer.position) % layer.width;
         if (posX < 0) posX += layer.width;

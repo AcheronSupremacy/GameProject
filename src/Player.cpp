@@ -18,7 +18,7 @@ Player::Player(int x, int y, int w, int h) :
     terminalVelocity(1200.0f),
     jumpCooldown(0.3f),
     jumpTimer(0.0f),
-    dashSpeed(5000.0f),
+    dashSpeed(2000.0f),
     dashDuration(0.2f),
     dashCooldown(0.2f),
     dashTimer(0.0f),
@@ -72,28 +72,38 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
     isGrounded = (rect.y == prevRect.y && velocityY >= 0);
 }
 
-void Player::moveLeft() { velocityX = -moveSpeed; }
-void Player::moveRight() { velocityX = moveSpeed; }
-void Player::stopMoving() { velocityX = 0; }
+void Player::handleInput() {
+    const Uint8* keystates = SDL_GetKeyboardState(nullptr);
+    static bool spaceWasReleased = true;
+    static bool shiftWasReleased = true;
+    if (keystates[SDL_SCANCODE_A]) velocityX = -moveSpeed;
+    else if (keystates[SDL_SCANCODE_D]) velocityX = moveSpeed;
+    else velocityX = 0;;
 
-void Player::jump() {
-    if (isGrounded) {
-        velocityY = jumpForce;
-        isGrounded = false;
-        jumpTimer = jumpCooldown;
-    }
+
+    if (keystates[SDL_SCANCODE_SPACE]) {
+        if (spaceWasReleased) {
+            if (isGrounded) {
+                velocityY = jumpForce;
+                isGrounded = false;
+                jumpTimer = jumpCooldown;
+            }
+            spaceWasReleased = false;
+        }
+    } else spaceWasReleased = true;
+    if (keystates[SDL_SCANCODE_LSHIFT]) {
+        if (shiftWasReleased) {
+            if (canDash && dashTimer <= 0.0f) {
+                isDashing = true;
+                canDash = false;
+                dashTimer = dashCooldown;
+                velocityX = (velocityX < 0) ? -dashSpeed : dashSpeed;
+                velocityY = 0;
+            }
+            shiftWasReleased = false;
+        }
+    } else shiftWasReleased = true;
 }
-
-void Player::dash() {
-    if (canDash && dashTimer <= 0.0f) {
-        isDashing = true;
-        canDash = false;
-        dashTimer = dashCooldown;
-        velocityX = (velocityX < 0) ? -dashSpeed : dashSpeed;
-        velocityY = 0;
-    }
-}
-
 void Player::handleWallSlide(float deltaTime) {
     if ((onLeftWall || onRightWall) && !isGrounded && velocityY > 0) {
         isWallSliding = true;

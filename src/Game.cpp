@@ -99,29 +99,8 @@ void Game::handle_events() {
 }
 
 void Game::update() {
-    const Uint8* keystates = SDL_GetKeyboardState(nullptr);
-    static Uint32 lastTime = SDL_GetTicks();
-    static bool spaceWasReleased = true;
-    static bool shiftWasReleased = true;
     float deltaTime = calculateDeltaTime();
-
-    if (keystates[SDL_SCANCODE_A]) player->moveLeft();
-    else if (keystates[SDL_SCANCODE_D]) player->moveRight();
-    else player->stopMoving();
-
-
-    if (keystates[SDL_SCANCODE_SPACE]) {
-        if (spaceWasReleased) {
-            player->jump();
-            spaceWasReleased = false;
-        }
-    } else spaceWasReleased = true;
-    if (keystates[SDL_SCANCODE_LSHIFT]) {
-        if (shiftWasReleased) {
-            player->dash();
-            shiftWasReleased = false;
-        }
-    } else shiftWasReleased = true;
+    player->handleInput();
     player->update(deltaTime, platforms);
 
     centerCameraOnPlayer();

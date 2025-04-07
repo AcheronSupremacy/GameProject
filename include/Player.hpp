@@ -16,12 +16,8 @@ public:
 
     void update(float deltaTime, const std::vector<Platform>& platforms);
     void render(SDL_Renderer* renderer, const SDL_Rect& camera);
+    void handleInput();
 
-    void moveLeft();
-    void moveRight();
-    void stopMoving();
-    void jump();
-    void dash();
     [[nodiscard]] bool getIsGrounded() const { return isGrounded; }
     [[nodiscard]] bool getIsDashing() const { return isDashing; }
     SDL_Rect rect;
