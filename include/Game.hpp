@@ -40,7 +40,6 @@ private:
     void loadLevel();
     void centerCameraOnPlayer();
 
-
     Background* background;
 };
 const int LEVEL_WIDTH = 2560;

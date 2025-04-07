@@ -19,7 +19,7 @@ Player::Player(int x, int y, int w, int h) :
     jumpCooldown(0.3f),
     jumpTimer(0.0f),
     dashSpeed(5000.0f),
-    dashDuration(0.15f),
+    dashDuration(0.2f),
     dashCooldown(0.5f),
     dashTimer(0.0f),
     isDashing(false),
@@ -60,6 +60,13 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
         }
     }
 
+    if (isGrounded) {
+        velocityY = 0;
+    }
+
+    SDL_LogVerbose(0, "Delta Time: %f", deltaTime);
+    SDL_LogVerbose(0, "Velocity: %f %f", velocityX, velocityY);
+    SDL_LogVerbose(0, "Terminal Velocity: %f", terminalVelocity);
     SDL_Rect prevRect = rect;
     rect.x += static_cast<int>(velocityX * deltaTime);
     rect.y += static_cast<int>(velocityY * deltaTime);
@@ -69,7 +76,6 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
 
     rect.x = std::clamp(rect.x, 0, LEVEL_WIDTH - rect.w);
     rect.y = std::clamp(rect.y, 0, LEVEL_HEIGHT - rect.h);
-    isGrounded = (rect.y == prevRect.y && velocityY >= 0);
 }
 
 void Player::handleInput() {
@@ -78,8 +84,7 @@ void Player::handleInput() {
     static bool shiftWasReleased = true;
     if (keystates[SDL_SCANCODE_A]) velocityX = -moveSpeed;
     else if (keystates[SDL_SCANCODE_D]) velocityX = moveSpeed;
-    else velocityX = 0;;
-
+    else velocityX = 0;
 
     if (keystates[SDL_SCANCODE_SPACE]) {
         if (spaceWasReleased) {
@@ -125,10 +130,12 @@ void Player::handleWallSlide(float deltaTime) {
 void Player::handleCollisions(const std::vector<Platform>& platforms, const SDL_Rect& prevRect) {
     onLeftWall = false;
     onRightWall = false;
-
+    SDL_LogVerbose(0, "Begin handling collisions");
+    int collisionCount = 0;
     for (const auto& platform : platforms) {
         SDL_Rect intersect;
         if (SDL_IntersectRect(&rect, &platform.rect, &intersect)) {
+            collisionCount++;
             bool horizontalCollision = (intersect.w < intersect.h);
             bool fromTop = (rect.y + rect.h - intersect.h <= platform.rect.y);
 
@@ -142,21 +149,30 @@ void Player::handleCollisions(const std::vector<Platform>& platforms, const SDL_
                 }
                 velocityX = 0;
             } else {
+                // SDL_LogVerbose(0, "Vertical Collision Detected");
+                // SDL_LogVerbose(0, "Intersect Rect: %d %d %d %d", intersect.x, intersect.y, intersect.w, intersect.h);
+                isGrounded = true;
                 if (fromTop) {
-                    rect.y -= intersect.h;
+                    rect.y -= intersect.h - 1;
                     velocityY = 0;
                     isGrounded = true;
                 } else {
                     rect.y += intersect.h;
                     velocityY = 0;
                 }
-                    }
-                }
             }
         }
+    }
+    if (collisionCount > 0) {
+        SDL_LogVerbose(0, "Collision detected with %d platforms", collisionCount);
+    } else {
+        SDL_LogVerbose(0, "No collision detected");
+        isGrounded = false;
+    }
+}
 
 void Player::render(SDL_Renderer* renderer, const SDL_Rect& camera) {
-    SDL_Rect renderRect = {rect.x - camera.x, rect.y - camera.y, rect.w, rect.h};
+    SDL_Rect renderRect = {rect.x - camera.x, rect.y - camera.y - 1, rect.w, rect.h};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &renderRect);
 }

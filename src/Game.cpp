@@ -22,6 +22,9 @@ Game::~Game() = default;
 void Game::init(const std::string &title, const int w, const int h) {
     windowWidth = w;
     windowHeight = h;
+#ifndef NDEBUG
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#endif
     if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
         this->window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_SHOWN);
         this->renderer = SDL_CreateRenderer(this->window, -1, 0);
