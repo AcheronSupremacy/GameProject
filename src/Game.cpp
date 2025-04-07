@@ -35,8 +35,8 @@ void Game::init(const std::string &title, const int w, const int h) {
     }
     background = new Background(renderer, windowWidth, windowHeight);
     background->addLayer("assets/background/background_layer_1.png",0.05f);
-    background->addLayer("assets/background/background_layer_2.png",0.15f);
-    background->addLayer("assets/background/background_layer_3.png",0.3f);
+    background->addLayer("assets/background/background_layer_2.png",0.1f);
+    background->addLayer("assets/background/background_layer_3.png",0.2f);
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 20);
 
@@ -67,11 +67,21 @@ void Game::loadLevel() {
 }
 
 void Game::centerCameraOnPlayer() {
-    camera.x = player->rect.x + (player->rect.w / 2) - (windowWidth / 2);
-    camera.y = player->rect.y + (player->rect.h / 2) - (windowHeight / 2);
+    int targetX = player->rect.x - windowWidth / 2;
 
-    camera.x = std::clamp(camera.x, 0, LEVEL_WIDTH - windowWidth);
-    camera.y = std::clamp(camera.y, 0, LEVEL_HEIGHT - windowHeight);
+    if (player->getIsDashing()) {
+        camera.x = camera.x + (targetX - camera.x) * cameraSmoothing;
+    } else {
+        camera.x = targetX;
+    }
+
+    if (camera.x < 0) {
+        camera.x = 0;
+    } else if (camera.x > LEVEL_WIDTH - camera.w) {
+        camera.x = LEVEL_WIDTH - camera.w;
+    }
+
+    camera.y = 0;
 }
 
 void Game::handle_events() {
@@ -112,11 +122,13 @@ void Game::update() {
             shiftWasReleased = false;
         }
     } else shiftWasReleased = true;
-    float previousX = player->rect.x;
     player->update(deltaTime, platforms);
-    float deltaX = player->rect.x - previousX;
-    background->update(deltaX);
+
     centerCameraOnPlayer();
+
+    float cameraDeltaX = camera.x - previousCameraX;
+    previousCameraX = camera.x;
+    background->update(cameraDeltaX);
 }
 
 void Game::render() const {
@@ -137,8 +149,11 @@ void Game::clean() const {
         delete background;
     }
     TextureManager::Clean();
+    delete player;
     SDL_DestroyRenderer(this->renderer);
     SDL_DestroyWindow(this->window);
+    TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
-    delete player;
+
 }

@@ -22,9 +22,8 @@ public:
     void stopMoving();
     void jump();
     void dash();
-    bool getIsGrounded() const { return isGrounded; }
-    float getSpeed() const {return velocityX; }
-    int getPos() const {return rect.x;}
+    [[nodiscard]] bool getIsGrounded() const { return isGrounded; }
+    [[nodiscard]] bool getIsDashing() const { return isDashing; }
     SDL_Rect rect;
 
 

@@ -31,6 +31,8 @@ private:
     std::vector<Platform> platforms;
 
     SDL_Rect camera;
+    float previousCameraX = 0;
+    float cameraSmoothing = 0.1f;
 
     SDL_Texture* playerTexture;
     SDL_Texture* platformTexture;

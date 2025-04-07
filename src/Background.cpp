@@ -35,11 +35,9 @@ bool Background::addLayer(const std::string& imagePath, float scrollSpeed) {
 
 void Background::update(float playerDeltaX) {
     for (auto& layer : layers) {
-        // Use actual movement instead of velocity
-        float movement = -playerDeltaX * layer.scrollSpeed;
+        float movement = playerDeltaX * layer.scrollSpeed;
         layer.position += movement;
 
-        // Keep existing wrap-around logic
         if (layer.position > layer.width) {
             layer.position -= layer.width;
         } else if (layer.position < 0) {
