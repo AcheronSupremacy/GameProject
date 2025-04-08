@@ -8,7 +8,6 @@
 #include "InstructionState.hpp"
 #include "Game.hpp"
 #include "SDL_ttf.h"
-#include "TextureManager.hpp"
 #include <iostream>
 
 InstructionState::InstructionState() = default;
@@ -34,7 +33,6 @@ void InstructionState::enter() {
         game->getStateManager()->changeState("menu");
     });
 
-    // Setup button text
     for (auto& button : buttons) {
         button.setText(button.getText(), game->getRenderer(), instructionFont);
     }
@@ -91,7 +89,6 @@ void InstructionState::exit() {
         instructionFont = nullptr;
     }
 
-    // Clean up instruction textures
     for (auto& instruction : instructions) {
         if (instruction.texture) {
             SDL_DestroyTexture(instruction.texture);
@@ -114,7 +111,6 @@ void InstructionState::handleEvents(SDL_Event& e) {
 }
 
 void InstructionState::update(float deltaTime) {
-    // Nothing to update
 }
 
 void InstructionState::render(SDL_Renderer* renderer) {

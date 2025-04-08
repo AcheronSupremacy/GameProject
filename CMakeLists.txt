@@ -33,6 +33,12 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/Button.cpp
         include/InstructionState.hpp
         src/InstructionState.cpp
+        include/GameOverState.hpp
+        src/GameOverState.cpp
+        include/LevelCompleteState.hpp
+        src/LevelCompleteState.cpp
+        include/ExitDoor.hpp
+        src/ExitDoor.cpp
 )
 
 if (CMAKE_BUILD_TYPE MATCHES Release)

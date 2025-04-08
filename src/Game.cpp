@@ -13,6 +13,8 @@
 #include "PlayState.hpp"
 #include "PauseState.hpp"
 #include "InstructionState.hpp"
+#include "GameOverState.hpp"
+#include "LevelCompleteState.hpp"
 
 Game::Game() {
     this->is_running = false;
@@ -49,6 +51,8 @@ void Game::init(const std::string &title, const int w, const int h) {
     stateManager->registerState<PlayState>("play", true);
     stateManager->registerState<PauseState>("pause", false);
     stateManager->registerState<InstructionState>("instructions");
+    stateManager->registerState<GameOverState>("gameover", false);
+    stateManager->registerState<LevelCompleteState>("levelcomplete", false);
     stateManager->changeState("menu");
 }
 

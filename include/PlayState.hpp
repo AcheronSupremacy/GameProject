@@ -9,6 +9,7 @@
 #include "Player.hpp"
 #include "Background.hpp"
 #include "Platform.hpp"
+#include "ExitDoor.hpp"
 #include <vector>
 
 class PlayState : public GameState {
@@ -25,11 +26,16 @@ private:
     Player* player = nullptr;
     Background* background = nullptr;
     std::vector<Platform> platforms;
+    ExitDoor* exitDoor;
     SDL_Rect camera;
     float previousCameraX = 0;
     float cameraSmoothing = 0.5f;
 
+    const int gameOverThreshold = 100;
+
     void loadLevel();
     void centerCameraOnPlayer();
+    void checkGameOver();
+    void checkLevelComplete();
 };
 #endif //PLAYSTATE_HPP

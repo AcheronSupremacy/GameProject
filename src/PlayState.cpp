@@ -6,7 +6,7 @@
 #include "Game.hpp"
 #include <iostream>
 
-PlayState::PlayState() =default;
+PlayState::PlayState() : exitDoor(nullptr) {}
 
 
 void PlayState::enter() {
@@ -27,6 +27,9 @@ void PlayState::enter() {
 
         loadLevel();
     }
+    if (!exitDoor) {
+        exitDoor = new ExitDoor(LEVEL_WIDTH - 150, LEVEL_HEIGHT - 150, 50, 100);
+    }
 }
 
 void PlayState::exit() {
@@ -40,7 +43,10 @@ void PlayState::exit() {
             delete background;
             background = nullptr;
         }
-
+        if (exitDoor) {
+            delete exitDoor;
+            exitDoor = nullptr;
+        }
         platforms.clear();
     }
 }
@@ -51,6 +57,10 @@ void PlayState::loadLevel() {
     platforms.emplace_back(600, 500, 200, 20);
     platforms.emplace_back(900, 400, 200, 20);
     platforms.emplace_back(1200, 300, 200, 20);
+    platforms.emplace_back(1500, 450, 200, 20);
+    platforms.emplace_back(1800, 350, 200, 20);
+    platforms.emplace_back(2100, 250, 200, 20);
+    platforms.emplace_back(LEVEL_WIDTH - 200, LEVEL_HEIGHT - 150, 200, 20);
 }
 
 void PlayState::centerCameraOnPlayer() {
@@ -70,7 +80,22 @@ void PlayState::centerCameraOnPlayer() {
 
     camera.y = 0;
 }
+void PlayState::checkGameOver() {
+    if (player->rect.y > LEVEL_HEIGHT + gameOverThreshold) {
+        game->getStateManager()->changeState("gameover");
+    }
+}
 
+void PlayState::checkLevelComplete() {
+    if (exitDoor) {
+        SDL_Rect playerRect = player->rect;
+        SDL_Rect doorRect = exitDoor->getRect();
+
+        if (SDL_HasIntersection(&playerRect, &doorRect)) {
+            game->getStateManager()->changeState("levelcomplete");
+        }
+    }
+}
 void PlayState::handleEvents(SDL_Event& e) {
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
         game->getStateManager()->changeState("pause");
@@ -86,6 +111,8 @@ void PlayState::update(float deltaTime) {
     float cameraDeltaX = camera.x - previousCameraX;
     previousCameraX = camera.x;
     background->update(cameraDeltaX);
+    checkGameOver();
+    checkLevelComplete();
 }
 
 void PlayState::render(SDL_Renderer* renderer) {
@@ -93,6 +120,9 @@ void PlayState::render(SDL_Renderer* renderer) {
 
     for (auto& platform : platforms) {
         platform.render(renderer, camera);
+    }
+    if (exitDoor) {
+        exitDoor->render(renderer, camera);
     }
 
     player->render(renderer, camera);
