@@ -7,12 +7,13 @@
 #include "SDL_ttf.h"
 #include "TextureManager.hpp"
 #include <iostream>
+#include "AudioManager.hpp"
 
 MenuState::MenuState() = default;
 
 
 void MenuState::enter() {
-
+    AudioManager::getInstance().playMusic("bg_music");
     font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
     titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 100);
     if (!font) {
@@ -35,6 +36,12 @@ void MenuState::enter() {
                       SDL_Color{50, 50, 150, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
         game->getStateManager()->changeState("instructions");
+    });
+
+    buttons.emplace_back(w/2 - 100, h/2 + 45, 200, 50, "Settings",
+                      SDL_Color{150, 150, 50, 255}, SDL_Color{255, 255, 255, 255});
+    buttons.back().setCallback([this]() {
+        game->getStateManager()->changeState("settings");
     });
 
     buttons.emplace_back(w/2 - 100, h/2 + 50, 200, 50, "Exit",

@@ -7,10 +7,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
 set(SDL2TTF_VENDORED ON CACHE BOOL "" FORCE)
+set(SDL2MIXER_VENDORED ON CACHE BOOL "" FORCE)
+set(SDL2MIXER_OPUS ON CACHE BOOL "" FORCE)
 
 add_subdirectory(external/SDL EXCLUDE_FROM_ALL)
 add_subdirectory(external/SDL_image EXCLUDE_FROM_ALL)
 add_subdirectory(external/SDL_ttf EXCLUDE_FROM_ALL)
+add_subdirectory(external/SDL_mixer EXCLUDE_FROM_ALL)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         include/Game.hpp
@@ -39,6 +42,12 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/LevelCompleteState.cpp
         include/ExitDoor.hpp
         src/ExitDoor.cpp
+        include/AudioManager.hpp
+        src/AudioManger.cpp
+        include/Slider.hpp
+        src/Slider.cpp
+        include/SettingsState.hpp
+        src/SettingsState.cpp
 )
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
@@ -49,9 +58,9 @@ if (CMAKE_BUILD_TYPE MATCHES Release)
     endif()
 endif ()
 
-target_include_directories(${PROJECT_NAME} PRIVATE include SDL2_image::SDL2_image SDL2::SDL2main SDL2::SDL2 SDL2_ttf::SDL2_ttf)
+target_include_directories(${PROJECT_NAME} PRIVATE include SDL2_image::SDL2_image SDL2::SDL2main SDL2::SDL2 SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image SDL2::SDL2main SDL2::SDL2 SDL2_ttf::SDL2_ttf)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image SDL2::SDL2main SDL2::SDL2 SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
 
 
 

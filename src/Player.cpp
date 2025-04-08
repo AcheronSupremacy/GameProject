@@ -3,6 +3,8 @@
 //
 #include "Player.hpp"
 #include <algorithm>
+
+#include "AudioManager.hpp"
 #include "Game.hpp"
 
 Player::Player(int x, int y, int w, int h) :
@@ -71,7 +73,7 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
     rect.x += static_cast<int>(velocityX * deltaTime);
     rect.y += static_cast<int>(velocityY * deltaTime);
     handleCollisions(platforms, prevRect);
-    handleWallSlide(deltaTime);
+    handleWallSlide();
 
 
     rect.x = std::clamp(rect.x, 0, LEVEL_WIDTH - rect.w);
@@ -88,6 +90,7 @@ void Player::handleInput() {
 
     if (keystates[SDL_SCANCODE_SPACE]) {
         if (spaceWasReleased) {
+            AudioManager::getInstance().playSoundEffect("jump");
             if (isGrounded) {
                 velocityY = jumpForce;
                 isGrounded = false;
@@ -109,7 +112,7 @@ void Player::handleInput() {
         }
     } else shiftWasReleased = true;
 }
-void Player::handleWallSlide(float deltaTime) {
+void Player::handleWallSlide() {
     if ((onLeftWall || onRightWall) && !isGrounded && velocityY > 0) {
         isWallSliding = true;
         velocityY = wallSlideSpeed;

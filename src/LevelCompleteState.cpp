@@ -5,6 +5,7 @@
 #include "Game.hpp"
 #include "SDL_ttf.h"
 #include <iostream>
+#include <AudioManager.hpp>
 
 LevelCompleteState::LevelCompleteState() = default;
 
@@ -14,7 +15,7 @@ void LevelCompleteState::enter() {
     if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
-
+    AudioManager::getInstance().playSoundEffect("win");
 
     SDL_Color textColor = {50, 255, 50, 255};
     SDL_Surface* completedSurface = TTF_RenderText_Blended(titleFont, "LEVEL CLEARED!", textColor);

@@ -15,6 +15,7 @@
 #include "InstructionState.hpp"
 #include "GameOverState.hpp"
 #include "LevelCompleteState.hpp"
+#include "AudioManager.hpp"
 
 Game::Game() {
     this->is_running = false;
@@ -44,7 +45,16 @@ void Game::init(const std::string &title, const int w, const int h) {
     if (TTF_Init() == -1) {
         std::cerr << "SDL_ttf failed: " << TTF_GetError() << std::endl;
     }
+    if (!AudioManager::getInstance().init()) {
+        std::cerr << "Failed to initialize AudioManager!" << std::endl;
+    } else {
+        AudioManager::getInstance().loadMusic("bg_music", "assets/bgmusic.mp3");
+        AudioManager::getInstance().loadSoundEffect("jump", "assets/jump.mp3");
+        AudioManager::getInstance().loadSoundEffect("level_complete", "assets/win.mp3");
+        AudioManager::getInstance().loadSoundEffect("game_over", "assets/lose.mp3");
 
+        AudioManager::getInstance().playMusic("menu_music");
+    }
     TTF_Init();
     stateManager = std::make_unique<GameStateManager>(this);
     stateManager->registerState<MenuState>("menu");

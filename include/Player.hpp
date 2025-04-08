@@ -26,7 +26,7 @@ public:
 
 private:
     void handleCollisions(const std::vector<Platform>& platforms, const SDL_Rect& prevRect);
-    void handleWallSlide(float deltaTime);
+    void handleWallSlide();
     float velocityX;
     float velocityY;
     bool isGrounded;

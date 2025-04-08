@@ -7,7 +7,7 @@
 #include "SDL_ttf.h"
 #include <iostream>
 #include <cmath>
-
+#include "AudioManager.hpp"
 GameOverState::GameOverState() = default;
 
 void GameOverState::enter() {
@@ -16,7 +16,7 @@ void GameOverState::enter() {
     if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
-
+    AudioManager::getInstance().playSoundEffect("lose");
 
     SDL_Color textColor = {255, 50, 50, 255};
     SDL_Surface* gameOverSurface = TTF_RenderText_Blended(titleFont, "GAME OVER", textColor);
