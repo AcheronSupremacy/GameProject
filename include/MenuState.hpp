@@ -22,8 +22,11 @@ public:
 
 private:
     TTF_Font* font = nullptr;
+    TTF_Font* titleFont = nullptr;
     std::vector<Button> buttons;
-    SDL_Texture* backgroundTexture = nullptr;
+    SDL_Texture* backgroundTexture1 = nullptr;
+    SDL_Texture* backgroundTexture2 = nullptr;
+    SDL_Texture* backgroundTexture3 = nullptr;
 };
 
 #endif //MENUSTATE_HPP

@@ -13,7 +13,6 @@ PauseState::PauseState() =default;
 
 
 void PauseState::enter() {
-    std::cout << "Entering Pause State" << std::endl;
 
     font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
     if (!font) {
@@ -24,7 +23,7 @@ void PauseState::enter() {
                                     SDL_TEXTUREACCESS_TARGET, game->getWindowWidth(), game->getWindowHeight());
     SDL_SetTextureBlendMode(overlayTexture, SDL_BLENDMODE_BLEND);
     SDL_SetRenderTarget(game->getRenderer(), overlayTexture);
-    SDL_SetRenderDrawColor(game->getRenderer(), 0, 0, 0, 180);
+    SDL_SetRenderDrawColor(game->getRenderer(), 0, 0, 0, 255);
     SDL_RenderClear(game->getRenderer());
     SDL_SetRenderTarget(game->getRenderer(), nullptr);
 
@@ -49,7 +48,10 @@ void PauseState::enter() {
 }
 
 void PauseState::exit() {
-    std::cout << "Exiting Pause State" << std::endl;
+    if (overlayTexture) {
+        SDL_DestroyTexture(overlayTexture);
+        overlayTexture = nullptr;
+    }
     buttons.clear();
 }
 

@@ -35,22 +35,43 @@ public:
     ~GameStateManager() = default;
 
     template<typename T>
-    void registerState(const std::string& name) {
-        states[name] = [this] {
+    void registerState(const std::string& name, bool persistent = false) {
+        stateFactories[name] = [this] {
             auto state = std::make_unique<T>();
             state->setGame(game);
             return state;
         };
+        persistentStates.insert({name, persistent});
     }
 
     void changeState(const std::string& name) {
         if (currentState) {
-            currentState->exit();
+            if (persistentStates[currentStateName]) {
+                // For persistent states, store the current state if it's not already stored
+                if (savedStates.find(currentStateName) == savedStates.end()) {
+                    savedStates[currentStateName] = std::move(currentState);
+                }
+                currentState = nullptr;
+            } else {
+                // For non-persistent states, call exit and discard
+                currentState->exit();
+                currentState = nullptr;
+            }
         }
 
-        auto it = states.find(name);
-        if (it != states.end()) {
-            currentState = it->second();
+        auto it = stateFactories.find(name);
+        if (it != stateFactories.end()) {
+            // Check if we have a saved instance of this state
+            auto savedIt = savedStates.find(name);
+            if (savedIt != savedStates.end()) {
+                // Restore the saved state
+                currentState = std::move(savedIt->second);
+                savedStates.erase(savedIt);
+            } else {
+                // Create a new state
+                currentState = it->second();
+            }
+
             currentStateName = name;
             currentState->enter();
         }
@@ -74,6 +95,8 @@ private:
     Game* game = nullptr;
     std::unique_ptr<GameState> currentState = nullptr;
     std::string currentStateName = "";
-    std::unordered_map<std::string, std::function<std::unique_ptr<GameState>()>> states;
+    std::unordered_map<std::string, std::function<std::unique_ptr<GameState>()>> stateFactories;
+    std::unordered_map<std::string, bool> persistentStates;
+    std::unordered_map<std::string, std::unique_ptr<GameState>> savedStates;
 };
 #endif //GAMESTATE_HPP

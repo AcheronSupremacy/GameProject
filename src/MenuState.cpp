@@ -12,13 +12,15 @@ MenuState::MenuState() = default;
 
 
 void MenuState::enter() {
-    std::cout << "Entering Menu State" << std::endl;
 
     font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
+    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 100);
     if (!font) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
-
+    if (!titleFont) {
+        std::cerr << "Failed to load title font: " << TTF_GetError() << std::endl;
+    }
 
     int w = game->getWindowWidth();
     int h = game->getWindowHeight();
@@ -29,6 +31,12 @@ void MenuState::enter() {
         game->getStateManager()->changeState("play");
     });
 
+    buttons.emplace_back(w/2 - 100, h/2, 200, 50, "Instructions",
+                      SDL_Color{50, 50, 150, 255}, SDL_Color{255, 255, 255, 255});
+    buttons.back().setCallback([this]() {
+        game->getStateManager()->changeState("instructions");
+    });
+
     buttons.emplace_back(w/2 - 100, h/2 + 50, 200, 50, "Exit",
                         SDL_Color{150, 50, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
@@ -37,16 +45,16 @@ void MenuState::enter() {
         SDL_PushEvent(&quitEvent);
     });
 
-    // Setup button text
     for (auto& button : buttons) {
         button.setText(button.getText(), game->getRenderer(), font);
     }
 
-    backgroundTexture = TextureManager::LoadTexture("assets/menu_background.png", game->getRenderer());
+    backgroundTexture1 = TextureManager::LoadTexture("assets/background/background_layer_1.png", game->getRenderer());
+    backgroundTexture2 = TextureManager::LoadTexture("assets/background/background_layer_2.png", game->getRenderer());
+    backgroundTexture3 = TextureManager::LoadTexture("assets/background/background_layer_3.png", game->getRenderer());
 }
 
 void MenuState::exit() {
-    std::cout << "Exiting Menu State" << std::endl;
     buttons.clear();
 }
 
@@ -60,17 +68,19 @@ void MenuState::update(float deltaTime) {
 }
 
 void MenuState::render(SDL_Renderer* renderer) {
-    if (backgroundTexture) {
+    if (backgroundTexture1&&backgroundTexture2&&backgroundTexture3) {
         SDL_Rect dest = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
-        SDL_RenderCopy(renderer, backgroundTexture, nullptr, &dest);
+        SDL_RenderCopy(renderer, backgroundTexture1, nullptr, &dest);
+        SDL_RenderCopy(renderer, backgroundTexture2, nullptr, &dest);
+        SDL_RenderCopy(renderer, backgroundTexture3, nullptr, &dest);
     } else {
         SDL_SetRenderDrawColor(renderer, 40, 40, 60, 255);
         SDL_RenderClear(renderer);
     }
 
-    if (font) {
+    if (titleFont) {
         SDL_Color textColor = {255, 255, 255, 255};
-        SDL_Surface* titleSurface = TTF_RenderText_Blended(font, "2D Platformer", textColor);
+        SDL_Surface* titleSurface = TTF_RenderText_Blended(titleFont, "Skill Issue?", textColor);
         if (titleSurface) {
             SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
             int w = game->getWindowWidth();

@@ -33,10 +33,10 @@ private:
     SDL_Rect rect;
     std::string text;
 
-    SDL_Color bgNormal = {70, 70, 70, 255};
-    SDL_Color bgHover = {100, 100, 100, 255};
-    SDL_Color bgPressed = {50, 50, 50, 255};
-    SDL_Color textColor = {255, 255, 255, 255};
+    SDL_Color bgNormal;
+    SDL_Color bgHover;
+    SDL_Color bgPressed ;
+    SDL_Color textColor;
 
     enum State { NORMAL, HOVERED, PRESSED };
     State currentState = NORMAL;

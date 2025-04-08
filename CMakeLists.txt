@@ -31,6 +31,8 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/PlayState.cpp
         src/PauseState.cpp
         src/Button.cpp
+        include/InstructionState.hpp
+        src/InstructionState.cpp
 )
 
 if (CMAKE_BUILD_TYPE MATCHES Release)

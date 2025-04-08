@@ -104,7 +104,14 @@ void Button::setText(const std::string& newText, SDL_Renderer* renderer, TTF_Fon
         if (surface) {
             textTexture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_FreeSurface(surface);
+            if (!textTexture) {
+                std::cerr << "Failed to create text texture: " << SDL_GetError() << std::endl;
+            }
+        } else {
+            std::cerr << "Failed to render text: " << TTF_GetError() << std::endl;
         }
+    } else {
+        std::cerr << "Font is null when setting text: " << text << std::endl;
     }
 }
 

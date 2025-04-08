@@ -12,6 +12,7 @@
 #include "MenuState.hpp"
 #include "PlayState.hpp"
 #include "PauseState.hpp"
+#include "InstructionState.hpp"
 
 Game::Game() {
     this->is_running = false;
@@ -44,10 +45,10 @@ void Game::init(const std::string &title, const int w, const int h) {
 
     TTF_Init();
     stateManager = std::make_unique<GameStateManager>(this);
-    stateManager->registerState<MenuState>("menu");
-    stateManager->registerState<PlayState>("play");
-    stateManager->registerState<PauseState>("pause");
-
+    stateManager->registerState<MenuState>("menu", false);
+    stateManager->registerState<PlayState>("play", true);
+    stateManager->registerState<PauseState>("pause", false);
+    stateManager->registerState<InstructionState>("instructions");
     stateManager->changeState("menu");
 }
 

@@ -10,36 +10,39 @@ PlayState::PlayState() =default;
 
 
 void PlayState::enter() {
-    std::cout << "Entering Play State" << std::endl;
+    if (!player) {
+        player = new Player(100, 100, 32, 32);
+    }
 
-    player = new Player(100, 100, 32, 32);
+    if (!background) {
+        background = new Background(game->getRenderer(), game->getWindowWidth(), game->getWindowHeight());
+        background->addLayer("assets/background/background_layer_1.png", 0.05f);
+        background->addLayer("assets/background/background_layer_2.png", 0.1f);
+        background->addLayer("assets/background/background_layer_3.png", 0.2f);
+    }
 
-    background = new Background(game->getRenderer(), game->getWindowWidth(), game->getWindowHeight());
-    background->addLayer("assets/background/background_layer_1.png", 0.05f);
-    background->addLayer("assets/background/background_layer_2.png", 0.1f);
-    background->addLayer("assets/background/background_layer_3.png", 0.2f);
+    if (platforms.empty()) {
+        camera = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
+        previousCameraX = 0;
 
-    camera = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
-    previousCameraX = 0;
-
-    // Load level
-    loadLevel();
+        loadLevel();
+    }
 }
 
 void PlayState::exit() {
-    std::cout << "Exiting Play State" << std::endl;
+    if (game->getStateManager()->getCurrentStateName() == "menu") {
+        if (player) {
+            delete player;
+            player = nullptr;
+        }
 
-    if (player) {
-        delete player;
-        player = nullptr;
+        if (background) {
+            delete background;
+            background = nullptr;
+        }
+
+        platforms.clear();
     }
-
-    if (background) {
-        delete background;
-        background = nullptr;
-    }
-
-    platforms.clear();
 }
 
 void PlayState::loadLevel() {

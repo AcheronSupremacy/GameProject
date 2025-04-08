@@ -9,7 +9,7 @@ unsigned int frame_start, frame_time;
 
 int main(int argc, char *argv[]) {
     game = new Game();
-    game->init("2D Platformer", 1280, 720);
+    game->init("Skill Issue?", 1280, 720);
 
     while (game->running()) {
         frame_start = SDL_GetTicks();
