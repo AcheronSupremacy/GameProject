@@ -10,8 +10,9 @@
 GameOverState::GameOverState() = default;
 
 void GameOverState::enter() {
-    font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 48);
-    if (!font) {
+    font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
+    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 100);
+    if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
 
@@ -24,12 +25,12 @@ void GameOverState::enter() {
     SDL_SetRenderTarget(game->getRenderer(), nullptr);
 
     SDL_Color textColor = {255, 50, 50, 255};
-    SDL_Surface* gameoOverSurface = TTF_RenderText_Blended(font, "GAME OVER", textColor);
-    if (gameoOverSurface) {
-        gameOverTextTexture = SDL_CreateTextureFromSurface(game->getRenderer(), gameoOverSurface);
-        gameOverTextWidth = gameoOverSurface->w;
-        gameOverTextHeight = gameoOverSurface->h;
-        SDL_FreeSurface(gameoOverSurface);
+    SDL_Surface* gameOverSurface = TTF_RenderText_Blended(titleFont, "GAME OVER", textColor);
+    if (gameOverSurface) {
+        gameOverTextTexture = SDL_CreateTextureFromSurface(game->getRenderer(), gameOverSurface);
+        gameOverTextWidth = gameOverSurface->w;
+        gameOverTextHeight = gameOverSurface->h;
+        SDL_FreeSurface(gameOverSurface);
     }
 
     animationTime = 0.0f;

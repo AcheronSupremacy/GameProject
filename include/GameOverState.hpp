@@ -22,6 +22,7 @@ public:
 
 private:
     TTF_Font* font = nullptr;
+    TTF_Font* titleFont = nullptr;
     std::vector<Button> buttons;
     SDL_Texture* overlayTexture = nullptr;
 

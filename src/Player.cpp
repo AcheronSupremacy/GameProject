@@ -75,7 +75,7 @@ void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
 
 
     rect.x = std::clamp(rect.x, 0, LEVEL_WIDTH - rect.w);
-    rect.y = std::clamp(rect.y, 0, LEVEL_HEIGHT - rect.h);
+    rect.y = std::clamp(rect.y, 0, LEVEL_HEIGHT - rect.h + 200);
 }
 
 void Player::handleInput() {

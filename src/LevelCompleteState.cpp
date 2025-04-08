@@ -9,8 +9,9 @@
 LevelCompleteState::LevelCompleteState() = default;
 
 void LevelCompleteState::enter() {
-    font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 36);
-    if (!font) {
+    font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
+    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 100);
+    if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
 
@@ -23,7 +24,7 @@ void LevelCompleteState::enter() {
     SDL_SetRenderTarget(game->getRenderer(), nullptr);
 
     SDL_Color textColor = {50, 255, 50, 255};
-    SDL_Surface* completedSurface = TTF_RenderText_Blended(font, "LEVEL CLEARED!", textColor);
+    SDL_Surface* completedSurface = TTF_RenderText_Blended(titleFont, "LEVEL CLEARED!", textColor);
     if (completedSurface) {
         completedTextTexture = SDL_CreateTextureFromSurface(game->getRenderer(), completedSurface);
         completedTextWidth = completedSurface->w;

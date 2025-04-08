@@ -52,7 +52,7 @@ void PlayState::exit() {
 }
 
 void PlayState::loadLevel() {
-    platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH, 50);
+    platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH/2, 50);
     platforms.emplace_back(300, 600, 200, 20);
     platforms.emplace_back(600, 500, 200, 20);
     platforms.emplace_back(900, 400, 200, 20);
