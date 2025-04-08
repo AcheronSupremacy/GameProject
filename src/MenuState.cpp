@@ -87,7 +87,7 @@ void MenuState::render(SDL_Renderer* renderer) {
 
     if (titleFont) {
         SDL_Color textColor = {255, 255, 255, 255};
-        SDL_Surface* titleSurface = TTF_RenderText_Blended(titleFont, "Skill Issue?", textColor);
+        SDL_Surface* titleSurface = TTF_RenderText_Blended(titleFont, "Do you have skill issue?", textColor);
         if (titleSurface) {
             SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
             int w = game->getWindowWidth();

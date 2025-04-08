@@ -4,9 +4,11 @@
 #include "PlayState.hpp"
 #include "Game.hpp"
 #include <iostream>
+#include "Platform.hpp"
 #include "AudioManager.hpp"
+#include "TextureManager.hpp"
 
-PlayState::PlayState() : exitDoor(nullptr) {}
+PlayState::PlayState() : exitDoor(nullptr), tilesetTexture(nullptr) {}
 
 
 void PlayState::enter() {
@@ -23,12 +25,24 @@ void PlayState::enter() {
         background->addLayer("assets/background/background_layer_3.png", 0.2f);
     }
 
-    if (platforms.empty()) {
-        camera = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
-        previousCameraX = 0;
+    bool textureLoaded = false;
 
+    if (!tilesetTexture) {
+        tilesetTexture = TextureManager::LoadTexture("assets/oak_woods_tileset.png", game->getRenderer());
+        if (!tilesetTexture) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load oak_woods_tileset.png");
+        } else {
+            textureLoaded = true;
+        }
+    }
+
+    camera = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
+    previousCameraX = 0;
+
+    if (textureLoaded || platforms.empty()) {
         loadLevel();
     }
+    
     if (!exitDoor) {
         exitDoor = new ExitDoor(LEVEL_WIDTH - 150, LEVEL_HEIGHT - 150, 50, 100);
     }
@@ -36,6 +50,13 @@ void PlayState::enter() {
 
 void PlayState::exit() {
     if (game->getStateManager()->getCurrentStateName() == "menu") {
+        platforms.clear();
+
+        if (tilesetTexture) {
+            SDL_DestroyTexture(tilesetTexture);
+            tilesetTexture = nullptr;
+        }
+
         if (player) {
             delete player;
             player = nullptr;
@@ -45,24 +66,26 @@ void PlayState::exit() {
             delete background;
             background = nullptr;
         }
+        
         if (exitDoor) {
             delete exitDoor;
             exitDoor = nullptr;
         }
-        platforms.clear();
     }
 }
 
 void PlayState::loadLevel() {
-    platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH/2, 50);
-    platforms.emplace_back(300, 600, 200, 20);
-    platforms.emplace_back(600, 500, 200, 20);
-    platforms.emplace_back(900, 400, 200, 20);
-    platforms.emplace_back(1200, 300, 200, 20);
-    platforms.emplace_back(1500, 450, 200, 20);
-    platforms.emplace_back(1800, 350, 200, 20);
-    platforms.emplace_back(2100, 250, 200, 20);
-    platforms.emplace_back(LEVEL_WIDTH - 200, LEVEL_HEIGHT - 150, 200, 20);
+    platforms.clear();
+
+    platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH/2, 50, tilesetTexture);
+    platforms.emplace_back(300, 600, 200, 20, tilesetTexture);
+    platforms.emplace_back(600, 500, 200, 20, tilesetTexture);
+    platforms.emplace_back(900, 400, 200, 20, tilesetTexture);
+    platforms.emplace_back(1200, 300, 200, 20, tilesetTexture);
+    platforms.emplace_back(1500, 450, 200, 20, tilesetTexture);
+    platforms.emplace_back(1800, 350, 200, 20, tilesetTexture);
+    platforms.emplace_back(2100, 250, 200, 20, tilesetTexture);
+    platforms.emplace_back(LEVEL_WIDTH - 200, LEVEL_HEIGHT - 150, 200, 20, tilesetTexture);
 }
 
 void PlayState::centerCameraOnPlayer() {

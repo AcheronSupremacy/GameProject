@@ -46,7 +46,7 @@ public:
     void pushState(const std::string& name) {
         auto it = stateFactories.find(name);
         if (it != stateFactories.end()) {
-            if (!stateStack.empty()) {
+            if (!stateStack.empty() && name != "pause") {
                 stateStack.back()->exit();
             }
 

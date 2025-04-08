@@ -21,6 +21,7 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/Player.hpp
         src/Player.cpp
         include/Platform.hpp
+        src/Platform.cpp
         include/TextureManager.hpp
         src/TextureManager.cpp
         include/GameState.hpp

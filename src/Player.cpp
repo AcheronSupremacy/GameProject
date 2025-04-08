@@ -2,180 +2,269 @@
 // Created by ACER on 3/12/2025.
 //
 #include "Player.hpp"
-#include <algorithm>
-
+#include "TextureManager.hpp"
 #include "AudioManager.hpp"
 #include "Game.hpp"
+#include <SDL2/SDL.h>
+#include <iostream>
+#include <algorithm>
 
-Player::Player(int x, int y, int w, int h) :
-    rect{x, y, w, h},
-    velocityX(0),
-    velocityY(0),
-    isGrounded(false),
-    gravity(1800.0f),
-    jumpForce(-650.0f),
-    moveSpeed(400.0f),
-    airResistance(0.8f),
-    groundFriction(0.7f),
-    terminalVelocity(1200.0f),
-    jumpCooldown(0.3f),
-    jumpTimer(0.0f),
-    dashSpeed(5000.0f),
-    dashDuration(0.2f),
-    dashCooldown(0.5f),
-    dashTimer(0.0f),
-    isDashing(false),
-    wallSlideSpeed(150.0f),
-    wallJumpForce(500.0f),
-    wallJumpHorizontalForce(300.0f),
-    isWallSliding(false),
-    canDash(true),
-    onLeftWall(false),
-    onRightWall(false) {}
-
-void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
-    if (jumpTimer > 0.0f) jumpTimer -= deltaTime;
-    if (isDashing) {
-        velocityY = 0;
-        dashTimer -= deltaTime;
-        if (dashTimer <= 0) {
-            isDashing = false;
-            dashTimer = dashCooldown;
-        }
+Player::Player(int x, int y, int w, int h) : rect{x, y, w, h} {
+    SDL_Renderer* renderer = SDL_GetRenderer(SDL_GetWindowFromID(1));
+    
+    spriteSheet1 = TextureManager::LoadTexture("assets/generic_char_v0.2/png/blue/char_blue_1.png", renderer);
+    if (!spriteSheet1) {
+        std::cerr << "Failed to load player sprite sheet 1!" << std::endl;
     }
-    else if (dashTimer > 0) {
-        dashTimer -= deltaTime;
-    }
-    else {
-        canDash = true;
+    
+    spriteSheet2 = TextureManager::LoadTexture("assets/generic_char_v0.2/png/blue/char_blue_2.png", renderer);
+    if (!spriteSheet2) {
+        std::cerr << "Failed to load player sprite sheet 2!" << std::endl;
     }
 
-    if (!isDashing) {
-        if (isGrounded) {
-            velocityX *= groundFriction;
-        } else {
-            velocityX *= airResistance;
-        }
+    initializeAnimations();
+}
 
-        if (!isWallSliding&& !isDashing) {
-            velocityY = std::min(velocityY + gravity * deltaTime, terminalVelocity);
-        }
+Player::~Player() {
+}
+
+void Player::initializeAnimations() {
+    for (int i = 0; i < 6; i++) {
+        idleFrames.push_back({i * frameWidth, 0, frameWidth, frameHeight});
     }
 
-    if (isGrounded) {
-        velocityY = 0;
+    for (int i = 0; i < 8; i++) {
+        runFrames.push_back({i * frameWidth, frameHeight * 2, frameWidth, frameHeight});
     }
 
-    SDL_LogVerbose(0, "Delta Time: %f", deltaTime);
-    SDL_LogVerbose(0, "Velocity: %f %f", velocityX, velocityY);
-    SDL_LogVerbose(0, "Terminal Velocity: %f", terminalVelocity);
-    SDL_Rect prevRect = rect;
-    rect.x += static_cast<int>(velocityX * deltaTime);
-    rect.y += static_cast<int>(velocityY * deltaTime);
-    handleCollisions(platforms, prevRect);
-    handleWallSlide();
+    for (int i = 0; i < 8; i++) {
+        jumpFrames.push_back({i * frameWidth, 3 * frameHeight, frameWidth, frameHeight});
+    }
 
+    for (int i = 2; i < 8; i++) {
+        fallFrames.push_back({i * frameWidth, 4 * frameHeight, frameWidth, frameHeight});
+    }
 
-    rect.x = std::clamp(rect.x, 0, LEVEL_WIDTH - rect.w);
-    rect.y = std::clamp(rect.y, 0, LEVEL_HEIGHT - rect.h + 200);
+    for (int i = 0; i < 8; i++) {
+        dashFrames.push_back({i * frameWidth, 2 * frameHeight, frameWidth, frameHeight});
+    }
 }
 
 void Player::handleInput() {
-    const Uint8* keystates = SDL_GetKeyboardState(nullptr);
-    static bool spaceWasReleased = true;
-    static bool shiftWasReleased = true;
-    if (keystates[SDL_SCANCODE_A]) velocityX = -moveSpeed;
-    else if (keystates[SDL_SCANCODE_D]) velocityX = moveSpeed;
-    else velocityX = 0;
+    const Uint8* keystates = SDL_GetKeyboardState(NULL);
 
-    if (keystates[SDL_SCANCODE_SPACE]) {
-        if (spaceWasReleased) {
-            AudioManager::getInstance().playSoundEffect("jump");
-            if (isGrounded) {
-                velocityY = jumpForce;
-                isGrounded = false;
-                jumpTimer = jumpCooldown;
-            }
-            spaceWasReleased = false;
+    velocityX = 0;
+
+    if (keystates[SDL_SCANCODE_A] || keystates[SDL_SCANCODE_LEFT]) {
+        velocityX = -moveSpeed;
+        facingLeft = true;
+    }
+    if (keystates[SDL_SCANCODE_D] || keystates[SDL_SCANCODE_RIGHT]) {
+        velocityX = moveSpeed;
+        facingLeft = false;
+    }
+
+    if ((keystates[SDL_SCANCODE_SPACE] || keystates[SDL_SCANCODE_W] || keystates[SDL_SCANCODE_UP]) && isOnGround) {
+        velocityY = jumpForce;
+        isOnGround = false;
+        AudioManager::getInstance().playSoundEffect("jump");
+    }
+
+    if (keystates[SDL_SCANCODE_LSHIFT] && !isDashing && dashCooldownTimer <= 0) {
+        isDashing = true;
+        dashTimer = dashDuration;
+        dashCooldownTimer = dashCooldown;
+    }
+}
+
+void Player::update(float deltaTime, const std::vector<Platform>& platforms) {
+    bool wasOnGround = isOnGround;
+
+    if (!isOnGround) {
+        velocityY += gravity;
+    }
+
+    if (isDashing) {
+        dashTimer -= deltaTime;
+        if (dashTimer <= 0) {
+            isDashing = false;
         }
-    } else spaceWasReleased = true;
-    if (keystates[SDL_SCANCODE_LSHIFT]) {
-        if (shiftWasReleased) {
-            if (canDash && dashTimer <= 0.0f) {
-                isDashing = true;
-                canDash = false;
-                dashTimer = dashDuration;
-                velocityX = (velocityX < 0) ? -dashSpeed : dashSpeed;
+        else {
+            velocityX = facingLeft ? -dashSpeed : dashSpeed;
+        }
+    }
+
+    if (dashCooldownTimer > 0) {
+        dashCooldownTimer -= deltaTime;
+        if (dashCooldownTimer < 0) {
+            dashCooldownTimer = 0;
+        }
+    }
+
+    rect.x += velocityX;
+
+    for (const auto& platform : platforms) {
+        if (platform.collidesWith(rect)) {
+            if (velocityX > 0) {
+                rect.x = platform.rect.x - rect.w;
+            } else if (velocityX < 0) {
+                rect.x = platform.rect.x + platform.rect.w;
+            }
+            break;
+        }
+    }
+
+    rect.y += velocityY;
+
+    isOnGround = false;
+
+    for (const auto& platform : platforms) {
+        if (platform.collidesWith(rect)) {
+            if (velocityY > 0) {
+                rect.y = platform.rect.y - rect.h;
+                velocityY = 0;
+                isOnGround = true;
+            } else if (velocityY < 0) {
+                rect.y = platform.rect.y + platform.rect.h;
                 velocityY = 0;
             }
-            shiftWasReleased = false;
+            break;
         }
-    } else shiftWasReleased = true;
-}
-void Player::handleWallSlide() {
-    if ((onLeftWall || onRightWall) && !isGrounded && velocityY > 0) {
-        isWallSliding = true;
-        velocityY = wallSlideSpeed;
-        velocityX *= 0.9f;
-    }
-    else {
-        isWallSliding = false;
     }
 
-    if (isWallSliding && SDL_GetKeyboardState(nullptr)[SDL_SCANCODE_SPACE]) {
-        isWallSliding = false;
-        velocityY = -wallJumpForce;
-        velocityX = onLeftWall ? wallJumpHorizontalForce : -wallJumpHorizontalForce;
-        canDash = true;
-    }
-}
+    if (!isOnGround) {
 
-void Player::handleCollisions(const std::vector<Platform>& platforms, const SDL_Rect& prevRect) {
-    onLeftWall = false;
-    onRightWall = false;
-    SDL_LogVerbose(0, "Begin handling collisions");
-    int collisionCount = 0;
-    for (const auto& platform : platforms) {
-        SDL_Rect intersect;
-        if (SDL_IntersectRect(&rect, &platform.rect, &intersect)) {
-            collisionCount++;
-            bool horizontalCollision = (intersect.w < intersect.h);
-            bool fromTop = (rect.y + rect.h - intersect.h <= platform.rect.y);
-
-            if (horizontalCollision) {
-                if (rect.x < platform.rect.x) {
-                    rect.x -= intersect.w;
-                    onRightWall = true;
-                } else {
-                    rect.x += intersect.w;
-                    onLeftWall = true;
-                }
-                velocityX = 0;
-            } else {
-                // SDL_LogVerbose(0, "Vertical Collision Detected");
-                // SDL_LogVerbose(0, "Intersect Rect: %d %d %d %d", intersect.x, intersect.y, intersect.w, intersect.h);
-                isGrounded = true;
-                if (fromTop) {
-                    rect.y -= intersect.h - 1;
-                    velocityY = 0;
-                    isGrounded = true;
-                } else {
-                    rect.y += intersect.h;
-                    velocityY = 0;
-                }
+        SDL_Rect extendedRect = rect;
+        extendedRect.y += 2;
+        
+        for (const auto& platform : platforms) {
+            if (platform.collidesWith(extendedRect)) {
+                rect.y = platform.rect.y - rect.h;
+                velocityY = 0;
+                isOnGround = true;
+                break;
             }
         }
     }
-    if (collisionCount > 0) {
-        SDL_LogVerbose(0, "Collision detected with %d platforms", collisionCount);
+
+    if (isOnGround) {
+        velocityY = 0;
+    }
+
+    updateAnimation(deltaTime);
+}
+
+PlayerState Player::determineState() {
+    static PlayerState lastState = IDLE;
+    static float stateChangeTimer = 0;
+    
+    PlayerState newState;
+    
+    if (isDashing) {
+        newState = DASHING;
+        stateChangeTimer = 0;
+    } else if (!isOnGround) {
+        newState = (velocityY < -0.1f) ? JUMPING : FALLING;
+        stateChangeTimer = 0;
+    } else if (abs(velocityX) > 0.1f) {
+        newState = RUNNING;
+        stateChangeTimer = 0;
     } else {
-        SDL_LogVerbose(0, "No collision detected");
-        isGrounded = false;
+        newState = IDLE;
+        if (lastState == FALLING) {
+            stateChangeTimer += 0.016f;
+            if (stateChangeTimer < 0.05f) {
+                newState = lastState;
+            }
+        }
+    }
+
+    lastState = newState;
+    return newState;
+}
+
+void Player::updateAnimation(float deltaTime) {
+    frameTimer += deltaTime;
+
+    if (frameTimer >= frameDelay) {
+        frameTimer = 0;
+        
+        currentState = determineState();
+        SDL_LogVerbose(0, "Update animation current State: %d", currentState);
+        switch (currentState) {
+            case IDLE:
+                currentFrame = (currentFrame + 1) % idleFrames.size();
+                break;
+            case RUNNING:
+                currentFrame = (currentFrame + 1) % runFrames.size();
+                break;
+            case JUMPING:
+                currentFrame = (currentFrame + 1) % jumpFrames.size();
+                break;
+            case FALLING:
+                currentFrame = (currentFrame + 1) % fallFrames.size();
+                break;
+            case DASHING:
+                currentFrame = (currentFrame + 1) % dashFrames.size();
+                break;
+        }
+        SDL_LogVerbose(0, "Update animation current frame: %d", currentFrame);
     }
 }
 
 void Player::render(SDL_Renderer* renderer, const SDL_Rect& camera) {
-    SDL_Rect renderRect = {rect.x - camera.x, rect.y - camera.y - 1, rect.w, rect.h};
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &renderRect);
+    if (!spriteSheet1 && !spriteSheet2) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+        
+        SDL_Rect destRect = {
+            rect.x - camera.x,
+            rect.y - camera.y,
+            rect.w,
+            rect.h
+        };
+        
+        SDL_RenderFillRect(renderer, &destRect);
+        return;
+    }
+
+    SDL_Texture* currentTexture = nullptr;
+    SDL_Rect* currentSrcRect = nullptr;
+    
+    SDL_LogVerbose(0, "Render current State: %d", currentState);
+    SDL_LogVerbose(0, "Render current frame: %d", currentFrame);
+    switch (currentState) {
+        case IDLE:
+            currentTexture = spriteSheet1;
+            currentSrcRect = &idleFrames[currentFrame];
+            break;
+        case RUNNING:
+            currentTexture = spriteSheet1;
+            currentSrcRect = &runFrames[currentFrame];
+            break;
+        case JUMPING:
+            currentTexture = spriteSheet1;
+            currentSrcRect = &jumpFrames[currentFrame];
+            break;
+        case FALLING:
+            currentTexture = spriteSheet1;
+            currentSrcRect = &fallFrames[currentFrame];
+            break;
+        case DASHING:
+            currentTexture = spriteSheet2;
+            currentSrcRect = &dashFrames[currentFrame];
+            break;
+    }
+
+    SDL_Rect destRect = {
+        rect.x - camera.x - (frameWidth - rect.w) / 2,
+        rect.y - camera.y - (frameHeight - rect.h),
+        frameWidth,
+        frameHeight
+    };
+
+    SDL_RendererFlip flip = facingLeft ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+    if (currentTexture && currentSrcRect) {
+        SDL_RenderCopyEx(renderer, currentTexture, currentSrcRect, &destRect, 0, nullptr, flip);
+    }
 }

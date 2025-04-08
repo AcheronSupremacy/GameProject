@@ -30,6 +30,8 @@ private:
     float previousCameraX = 0;
     float cameraSmoothing = 0.5f;
 
+    SDL_Texture* tilesetTexture = nullptr;
+    
     const int gameOverThreshold = 100;
 
     void loadLevel();
