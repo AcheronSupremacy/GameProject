@@ -63,8 +63,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE include SDL2_image::SDL2_imag
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image SDL2::SDL2main SDL2::SDL2 SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
 
-
-
 add_custom_target(copy_assets
         COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=$<CONFIGURATION> -P ${CMAKE_CURRENT_LIST_DIR}/copy-assets.cmake
 )

@@ -45,17 +45,14 @@ void InstructionState::createInstructionTexts() {
     int w = game->getWindowWidth();
 
     std::vector<std::string> instructionStrings = {
-        "A/D Keys: Move",
-        "Space: Jump",
+        "A/Left Arrow Keys: Move left",
+        "D/Right Arrow Keys: Move right",
+        "Space/W/Up arrow Key: Jump",
         "Left Shift: Dash",
         "Esc: Pause Game",
-        "",
-        "Wall slide by touching walls while falling",
-        "Press Space while wall sliding to wall jump",
-        "You can dash only once every 1 second"
-    };
+            };
 
-    int yPos = 200;
+    int yPos = 300;
     for (const auto& text : instructionStrings) {
         InstructionText instruction;
         instruction.text = text;
@@ -91,7 +88,7 @@ void InstructionState::handleEvents(SDL_Event& e) {
     }
 
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        game->getStateManager()->changeState("menu");
+        game->getStateManager()->clearAndSetState("menu");
     }
 }
 

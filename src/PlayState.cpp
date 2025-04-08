@@ -45,6 +45,7 @@ void PlayState::enter() {
     
     if (!exitDoor) {
         exitDoor = new ExitDoor(LEVEL_WIDTH - 150, LEVEL_HEIGHT - 150, 50, 100);
+        exitDoor->loadTexture(game->getRenderer());
     }
 }
 
@@ -77,15 +78,13 @@ void PlayState::exit() {
 void PlayState::loadLevel() {
     platforms.clear();
 
-    platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH/2, 50, tilesetTexture);
-    platforms.emplace_back(300, 600, 200, 20, tilesetTexture);
-    platforms.emplace_back(600, 500, 200, 20, tilesetTexture);
-    platforms.emplace_back(900, 400, 200, 20, tilesetTexture);
-    platforms.emplace_back(1200, 300, 200, 20, tilesetTexture);
-    platforms.emplace_back(1500, 450, 200, 20, tilesetTexture);
-    platforms.emplace_back(1800, 350, 200, 20, tilesetTexture);
-    platforms.emplace_back(2100, 250, 200, 20, tilesetTexture);
-    platforms.emplace_back(LEVEL_WIDTH - 200, LEVEL_HEIGHT - 150, 200, 20, tilesetTexture);
+    platforms.emplace_back(0, LEVEL_HEIGHT - 50, 200, 20, tilesetTexture);
+    platforms.emplace_back(300, 600, 100, 20, tilesetTexture);
+    platforms.emplace_back(600, 500, 100, 20, tilesetTexture);
+    platforms.emplace_back(900, 400, 100, 20, tilesetTexture);
+    platforms.emplace_back(1200, 300, 100, 20, tilesetTexture);
+    platforms.emplace_back(1500, 450, 100, 20, tilesetTexture);
+    platforms.emplace_back(1800, 350, 100, 20, tilesetTexture);
 }
 
 void PlayState::centerCameraOnPlayer() {
@@ -114,6 +113,10 @@ void PlayState::checkGameOver() {
 void PlayState::checkLevelComplete() {
     if (exitDoor) {
         SDL_Rect playerRect = player->rect;
+        playerRect.x += 4;
+        playerRect.y -= 1;
+        playerRect.w += -8;
+        playerRect.h += 2;
         SDL_Rect doorRect = exitDoor->getRect();
 
         if (SDL_HasIntersection(&playerRect, &doorRect)) {
@@ -130,12 +133,12 @@ void PlayState::handleEvents(SDL_Event& e) {
 void PlayState::update(float deltaTime) {
     player->handleInput();
     player->update(deltaTime, platforms);
-
+    
+    if (exitDoor) {
+        exitDoor->update(deltaTime);
+    }
+    
     centerCameraOnPlayer();
-
-    float cameraDeltaX = camera.x - previousCameraX;
-    previousCameraX = camera.x;
-    background->update(cameraDeltaX);
     checkGameOver();
     checkLevelComplete();
 }
