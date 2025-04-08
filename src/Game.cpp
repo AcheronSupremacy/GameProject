@@ -47,13 +47,13 @@ void Game::init(const std::string &title, const int w, const int h) {
 
     TTF_Init();
     stateManager = std::make_unique<GameStateManager>(this);
-    stateManager->registerState<MenuState>("menu", false);
-    stateManager->registerState<PlayState>("play", true);
-    stateManager->registerState<PauseState>("pause", false);
+    stateManager->registerState<MenuState>("menu");
+    stateManager->registerState<PlayState>("play");
+    stateManager->registerState<PauseState>("pause");
     stateManager->registerState<InstructionState>("instructions");
-    stateManager->registerState<GameOverState>("gameover", false);
-    stateManager->registerState<LevelCompleteState>("levelcomplete", false);
-    stateManager->changeState("menu");
+    stateManager->registerState<GameOverState>("gameover" );
+    stateManager->registerState<LevelCompleteState>("levelcomplete" );
+    stateManager->pushState("menu");
 }
 
 float Game::calculateDeltaTime() {

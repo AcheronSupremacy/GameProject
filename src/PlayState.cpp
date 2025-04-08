@@ -82,7 +82,7 @@ void PlayState::centerCameraOnPlayer() {
 }
 void PlayState::checkGameOver() {
     if (player->rect.y > LEVEL_HEIGHT + gameOverThreshold) {
-        game->getStateManager()->changeState("gameover");
+        game->getStateManager()->pushState("gameover");
     }
 }
 
@@ -92,13 +92,13 @@ void PlayState::checkLevelComplete() {
         SDL_Rect doorRect = exitDoor->getRect();
 
         if (SDL_HasIntersection(&playerRect, &doorRect)) {
-            game->getStateManager()->changeState("levelcomplete");
+            game->getStateManager()->pushState("levelcomplete");
         }
     }
 }
 void PlayState::handleEvents(SDL_Event& e) {
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
-        game->getStateManager()->changeState("pause");
+        game->getStateManager()->pushState("pause");
     }
 }
 

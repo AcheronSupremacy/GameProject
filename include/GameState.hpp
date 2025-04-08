@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <vector>
 
 class Game;
 
@@ -31,72 +32,86 @@ protected:
 
 class GameStateManager {
 public:
-    GameStateManager(Game* gamePtr) : game(gamePtr) {}
+    explicit GameStateManager(Game* gamePtr) : game(gamePtr) {}
     ~GameStateManager() = default;
 
     template<typename T>
-    void registerState(const std::string& name, bool persistent = false) {
+    void registerState(const std::string& name) {
         stateFactories[name] = [this] {
             auto state = std::make_unique<T>();
             state->setGame(game);
             return state;
         };
-        persistentStates.insert({name, persistent});
+    }
+    void pushState(const std::string& name) {
+        auto it = stateFactories.find(name);
+        if (it != stateFactories.end()) {
+            if (!stateStack.empty()) {
+                stateStack.back()->exit();
+            }
+
+            auto newState = it->second();
+            newState->enter();
+
+            stateStack.push_back(std::move(newState));
+            stateNames.push_back(name);
+        }
+    }
+
+    void popState() {
+        if (!stateStack.empty()) {
+            stateStack.back()->exit();
+            stateStack.pop_back();
+            stateNames.pop_back();
+
+            if (!stateStack.empty()) {
+                stateStack.back()->enter();
+            }
+        }
     }
 
     void changeState(const std::string& name) {
-        if (currentState) {
-            if (persistentStates[currentStateName]) {
-                // For persistent states, store the current state if it's not already stored
-                if (savedStates.find(currentStateName) == savedStates.end()) {
-                    savedStates[currentStateName] = std::move(currentState);
-                }
-                currentState = nullptr;
-            } else {
-                // For non-persistent states, call exit and discard
-                currentState->exit();
-                currentState = nullptr;
-            }
+        if (!stateStack.empty()) {
+            stateStack.back()->exit();
+            stateStack.pop_back();
+            stateNames.pop_back();
         }
 
-        auto it = stateFactories.find(name);
-        if (it != stateFactories.end()) {
-            // Check if we have a saved instance of this state
-            auto savedIt = savedStates.find(name);
-            if (savedIt != savedStates.end()) {
-                // Restore the saved state
-                currentState = std::move(savedIt->second);
-                savedStates.erase(savedIt);
-            } else {
-                // Create a new state
-                currentState = it->second();
-            }
-
-            currentStateName = name;
-            currentState->enter();
+        pushState(name);
+    }
+    void clearAndSetState(const std::string& name) {
+        while (!stateStack.empty()) {
+            stateStack.back()->exit();
+            stateStack.pop_back();
+            stateNames.pop_back();
         }
+
+        pushState(name);
     }
 
-    const std::string& getCurrentStateName() const { return currentStateName; }
+    const std::string& getCurrentStateName() const {
+        static std::string emptyString = "";
+        return stateStack.empty() ? emptyString : stateNames.back();
+    }
 
     void handleEvents(SDL_Event& e) {
-        if (currentState) currentState->handleEvents(e);
+        if (!stateStack.empty()) stateStack.back()->handleEvents(e);
     }
 
     void update(float deltaTime) {
-        if (currentState) currentState->update(deltaTime);
+        if (!stateStack.empty()) stateStack.back()->update(deltaTime);
     }
 
     void render(SDL_Renderer* renderer) {
-        if (currentState) currentState->render(renderer);
+        for (size_t i = 0; i < stateStack.size(); i++) {
+            stateStack[i]->render(renderer);
+        }
     }
 
 private:
     Game* game = nullptr;
-    std::unique_ptr<GameState> currentState = nullptr;
-    std::string currentStateName = "";
+    std::vector<std::unique_ptr<GameState>> stateStack;
+    std::vector<std::string> stateNames;
     std::unordered_map<std::string, std::function<std::unique_ptr<GameState>()>> stateFactories;
-    std::unordered_map<std::string, bool> persistentStates;
-    std::unordered_map<std::string, std::unique_ptr<GameState>> savedStates;
 };
 #endif //GAMESTATE_HPP

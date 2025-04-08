@@ -21,7 +21,6 @@ public:
     void handleEvents(SDL_Event& e) override;
     void update(float deltaTime) override;
     void render(SDL_Renderer* renderer) override;
-
 private:
     Player* player = nullptr;
     Background* background = nullptr;

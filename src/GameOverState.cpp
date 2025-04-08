@@ -3,6 +3,7 @@
 //
 #include "GameOverState.hpp"
 #include "Game.hpp"
+#include "PlayState.hpp"
 #include "SDL_ttf.h"
 #include <iostream>
 #include <cmath>
@@ -16,13 +17,6 @@ void GameOverState::enter() {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
 
-    overlayTexture = SDL_CreateTexture(game->getRenderer(), SDL_PIXELFORMAT_RGBA8888,
-                                    SDL_TEXTUREACCESS_TARGET, game->getWindowWidth(), game->getWindowHeight());
-    SDL_SetTextureBlendMode(overlayTexture, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderTarget(game->getRenderer(), overlayTexture);
-    SDL_SetRenderDrawColor(game->getRenderer(), 0, 0, 0, 200);
-    SDL_RenderClear(game->getRenderer());
-    SDL_SetRenderTarget(game->getRenderer(), nullptr);
 
     SDL_Color textColor = {255, 50, 50, 255};
     SDL_Surface* gameOverSurface = TTF_RenderText_Blended(titleFont, "GAME OVER", textColor);
@@ -42,13 +36,13 @@ void GameOverState::enter() {
     buttons.emplace_back(w/2 - 100, h/2 + 100, 200, 50, "Restart Level",
                         SDL_Color{100, 100, 150, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
-        game->getStateManager()->changeState("play");
+        game->getStateManager()->clearAndSetState("play");
     });
 
     buttons.emplace_back(w/2 - 100, h/2 + 170, 200, 50, "Main Menu",
                         SDL_Color{150, 50, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
-        game->getStateManager()->changeState("menu");
+        game->getStateManager()->clearAndSetState("menu");
     });
 
     for (auto& button : buttons) {
@@ -57,12 +51,7 @@ void GameOverState::enter() {
 }
 
 void GameOverState::exit() {
-    if (overlayTexture) {
-        SDL_DestroyTexture(overlayTexture);
-        overlayTexture = nullptr;
-    }
-
-    if (gameOverTextTexture) {
+        if (gameOverTextTexture) {
         SDL_DestroyTexture(gameOverTextTexture);
         gameOverTextTexture = nullptr;
     }
@@ -94,15 +83,19 @@ void GameOverState::update(float deltaTime) {
 }
 
 void GameOverState::render(SDL_Renderer* renderer) {
-    SDL_RenderCopy(renderer, overlayTexture, nullptr, nullptr);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 200);
+    SDL_Rect fullScreen = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
+    SDL_RenderFillRect(renderer, &fullScreen);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     if (gameOverTextTexture) {
         int w = game->getWindowWidth();
-        int startY = -gameOverTextHeight; // Start off-screen
+        int startY = -gameOverTextHeight;
         int targetY = game->getWindowHeight() / 2 - gameOverTextHeight;
 
         float t = animationTime / animationDuration;
-        float easeOut = 1 - pow(1 - t, 3); // Cubic ease-out formula
+        float easeOut = 1 - pow(1 - t, 3);
 
         int currentY = startY + (targetY - startY) * easeOut;
 
