@@ -16,6 +16,7 @@
 #include "GameOverState.hpp"
 #include "LevelCompleteState.hpp"
 #include "AudioManager.hpp"
+#include "SettingsState.hpp"
 
 Game::Game() {
     this->is_running = false;
@@ -52,9 +53,7 @@ void Game::init(const std::string &title, const int w, const int h) {
         AudioManager::getInstance().loadSoundEffect("jump", "assets/jump.mp3");
         AudioManager::getInstance().loadSoundEffect("level_complete", "assets/win.mp3");
         AudioManager::getInstance().loadSoundEffect("game_over", "assets/lose.mp3");
-
-        AudioManager::getInstance().playMusic("menu_music");
-    }
+        }
     TTF_Init();
     stateManager = std::make_unique<GameStateManager>(this);
     stateManager->registerState<MenuState>("menu");
@@ -63,6 +62,7 @@ void Game::init(const std::string &title, const int w, const int h) {
     stateManager->registerState<InstructionState>("instructions");
     stateManager->registerState<GameOverState>("gameover" );
     stateManager->registerState<LevelCompleteState>("levelcomplete" );
+    stateManager->registerState<SettingsState>("settings");
     stateManager->pushState("menu");
 }
 

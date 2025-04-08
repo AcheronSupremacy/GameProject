@@ -25,23 +25,24 @@ public:
     int getValue() const { return currentValue; }
 
     void setCallback(std::function<void(int)> callback) { valueChangedCallback = callback; }
-
+    void createLabelTexture(SDL_Renderer* renderer, TTF_Font* font);
 private:
     SDL_Rect sliderRect;
     SDL_Rect handleRect;
     std::string label;
-    SDL_Texture* labelTexture = nullptr;
+    SDL_Texture* labelTexture;
     SDL_Rect labelRect;
 
     SDL_Color sliderColor;
     SDL_Color handleColor;
 
+    TTF_Font* font = nullptr;
     int currentValue = 50;
     bool isDragging = false;
 
     std::function<void(int)> valueChangedCallback = nullptr;
 
     void updateHandlePosition();
-    void createLabelTexture(SDL_Renderer* renderer, TTF_Font* font);
+
 };
 #endif //SLIDER_HPP

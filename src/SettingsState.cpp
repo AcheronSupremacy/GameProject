@@ -19,60 +19,79 @@ void SettingsState::enter() {
     int w = game->getWindowWidth();
     int h = game->getWindowHeight();
 
+    originalMusicVolume = AudioManager::getInstance().getMusicVolume();
+    originalSfxVolume = AudioManager::getInstance().getEffectVolume();
+
     musicVolumeSlider = std::make_unique<Slider>(
-        w/2 + 100, h/2 - 50, 300, 20,
+        w/2 - 150, h/2 - 50, 300, 20,
         "Music Volume", font,
         SDL_Color{100, 100, 150, 255}, SDL_Color{200, 200, 255, 255}
     );
 
     sfxVolumeSlider = std::make_unique<Slider>(
-        w/2 + 100, h/2 + 50, 300, 20,
+        w/2 - 150, h/2 + 50, 300, 20,
         "SFX Volume", font,
         SDL_Color{100, 150, 100, 255}, SDL_Color{200, 255, 200, 255}
     );
 
-    musicVolumeSlider->setValue(AudioManager::getInstance().getMusicVolume());
-    sfxVolumeSlider->setValue(AudioManager::getInstance().getEffectVolume());
+    musicVolumeSlider->setValue(originalMusicVolume);
+    sfxVolumeSlider->setValue(originalSfxVolume);
 
-    musicVolumeSlider->setCallback([](int value) {
+    if (font) {
+        musicVolumeSlider->createLabelTexture(game->getRenderer(), font);
+        sfxVolumeSlider->createLabelTexture(game->getRenderer(), font);
+    }
+
+    musicVolumeSlider->setCallback([this](int value) {
         AudioManager::getInstance().setMusicVolume(value);
     });
 
-    sfxVolumeSlider->setCallback([](int value) {
+    sfxVolumeSlider->setCallback([this](int value) {
         AudioManager::getInstance().setEffectVolume(value);
     });
 
-    buttons.emplace_back(w/2 - 100, h - 100, 200, 50, "Back",
+    buttons.emplace_back(w/2 - 200, h - 100, 180, 50, "Back",
                         SDL_Color{150, 50, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
+        AudioManager::getInstance().setMusicVolume(originalMusicVolume);
+        AudioManager::getInstance().setEffectVolume(originalSfxVolume);
+
         game->getStateManager()->popState();
     });
 
-    buttons.emplace_back(w/2 - 100, h - 170, 200, 50, "Apply",
+    buttons.emplace_back(w/2 + 20, h - 100, 180, 50, "Apply",
                         SDL_Color{50, 150, 50, 255}, SDL_Color{255, 255, 255, 255});
-    buttons.back().setCallback([this]() {});
+    buttons.back().setCallback([this]() {
+        originalMusicVolume = AudioManager::getInstance().getMusicVolume();
+        originalSfxVolume = AudioManager::getInstance().getEffectVolume();
+
+        game->getStateManager()->popState();
+    });
 
     for (auto& button : buttons) {
-        button.setText(button.getText(), game->getRenderer(), font);
+        if (font) {
+            button.setText(button.getText(), game->getRenderer(), font);
+        }
     }
 
-    backgroundTexture = TextureManager::LoadTexture("assets/background/background_layer_1.png", game->getRenderer());
+
 }
 
 void SettingsState::exit() {
-    if (font) {
-        TTF_CloseFont(font);
-        font = nullptr;
-    }
+    buttons.clear();
+
+    musicVolumeSlider.reset();
+    sfxVolumeSlider.reset();
 
     if (titleFont) {
         TTF_CloseFont(titleFont);
         titleFont = nullptr;
     }
 
-    buttons.clear();
-    musicVolumeSlider.reset();
-    sfxVolumeSlider.reset();
+    if (font) {
+        TTF_CloseFont(font);
+        font = nullptr;
+    }
 }
 
 void SettingsState::handleEvents(SDL_Event& e) {
@@ -80,10 +99,21 @@ void SettingsState::handleEvents(SDL_Event& e) {
         button.handleEvent(e);
     }
 
-    musicVolumeSlider->handleEvent(e);
-    sfxVolumeSlider->handleEvent(e);
+    if (musicVolumeSlider) {
+        if (musicVolumeSlider->handleEvent(e) && font) {
+            musicVolumeSlider->createLabelTexture(game->getRenderer(), font);
+        }
+    }
+
+    if (sfxVolumeSlider) {
+        if (sfxVolumeSlider->handleEvent(e) && font) {
+            sfxVolumeSlider->createLabelTexture(game->getRenderer(), font);
+        }
+    }
 
     if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        AudioManager::getInstance().setMusicVolume(originalMusicVolume);
+        AudioManager::getInstance().setEffectVolume(originalSfxVolume);
         game->getStateManager()->popState();
     }
 }
@@ -92,13 +122,8 @@ void SettingsState::update(float deltaTime) {
 }
 
 void SettingsState::render(SDL_Renderer* renderer) {
-    if (backgroundTexture) {
-        SDL_Rect dest = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
-        SDL_RenderCopy(renderer, backgroundTexture, nullptr, &dest);
-    } else {
         SDL_SetRenderDrawColor(renderer, 40, 40, 60, 255);
         SDL_RenderClear(renderer);
-    }
 
     if (titleFont) {
         SDL_Color textColor = {255, 255, 255, 255};
@@ -113,8 +138,13 @@ void SettingsState::render(SDL_Renderer* renderer) {
         }
     }
 
-    musicVolumeSlider->render(renderer);
-    sfxVolumeSlider->render(renderer);
+    if (musicVolumeSlider) {
+        musicVolumeSlider->render(renderer);
+    }
+
+    if (sfxVolumeSlider) {
+        sfxVolumeSlider->render(renderer);
+    }
 
     for (auto& button : buttons) {
         button.render(renderer);

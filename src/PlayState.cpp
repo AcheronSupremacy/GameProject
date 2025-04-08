@@ -5,6 +5,7 @@
 #include "PlayState.hpp"
 #include "Game.hpp"
 #include <iostream>
+#include "AudioManager.hpp"
 
 PlayState::PlayState() : exitDoor(nullptr) {}
 
@@ -13,7 +14,9 @@ void PlayState::enter() {
     if (!player) {
         player = new Player(100, 100, 32, 32);
     }
-
+    if (!Mix_PlayingMusic()) {
+        AudioManager::getInstance().playMusic("bg_music", -1);
+    }
     if (!background) {
         background = new Background(game->getRenderer(), game->getWindowWidth(), game->getWindowHeight());
         background->addLayer("assets/background/background_layer_1.png", 0.05f);

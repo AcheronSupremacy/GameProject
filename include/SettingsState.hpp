@@ -30,7 +30,8 @@ private:
     std::unique_ptr<Slider> musicVolumeSlider;
     std::unique_ptr<Slider> sfxVolumeSlider;
 
-    SDL_Texture* backgroundTexture = nullptr;
+    int originalMusicVolume = 80;
+    int originalSfxVolume = 80;
 };
 
 #endif //SETTINGSTATE_HPP

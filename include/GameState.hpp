@@ -60,6 +60,7 @@ public:
 
     void popState() {
         if (!stateStack.empty()) {
+
             stateStack.back()->exit();
             stateStack.pop_back();
             stateNames.pop_back();

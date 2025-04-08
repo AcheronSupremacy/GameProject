@@ -48,7 +48,6 @@ bool Button::handleEvent(const SDL_Event& e) {
 
                 case SDL_MOUSEBUTTONUP:
                     if (currentState == PRESSED) {
-                        // Execute callback if available
                         if (onClick) {
                             onClick();
                         }

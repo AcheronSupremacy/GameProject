@@ -26,7 +26,6 @@ private:
     std::vector<Button> buttons;
     SDL_Texture* overlayTexture = nullptr;
 
-    // Animation properties
     float animationTime = 0.0f;
     float animationDuration = 1.5f;
     bool animationComplete = false;

@@ -10,11 +10,14 @@ Slider::Slider(int x, int y, int width, int height,
     : sliderRect{x, y, width, height},
       handleRect{x, y - height/2, height*2, height*2},
       label(labelText),
+      font(font),
       sliderColor(sliderColor),
-      handleColor(handleColor) {
+      handleColor(handleColor),
+      labelTexture(nullptr) {
 
     updateHandlePosition();
 }
+
 
 Slider::~Slider() {
     if (labelTexture) {
@@ -24,6 +27,10 @@ Slider::~Slider() {
 }
 
 void Slider::render(SDL_Renderer* renderer) {
+    if (!labelTexture && !label.empty()) {
+        createLabelTexture(renderer, TTF_OpenFont("assets/PixelifySans-Regular.ttf", 20));
+    }
+
     SDL_SetRenderDrawColor(renderer, sliderColor.r, sliderColor.g, sliderColor.b, sliderColor.a);
     SDL_RenderFillRect(renderer, &sliderRect);
 
@@ -50,9 +57,10 @@ bool Slider::handleEvent(SDL_Event& e) {
             if (newValue != currentValue) {
                 currentValue = std::max(0, std::min(100, newValue));
                 updateHandlePosition();
+                createLabelTexture(SDL_GetRenderer(SDL_GetMouseFocus()), font);
                 valueChanged = true;
             }
-        }
+            }
     }
     else if (e.type == SDL_MOUSEMOTION && isDragging) {
         int x = e.motion.x;
@@ -61,6 +69,7 @@ bool Slider::handleEvent(SDL_Event& e) {
         if (newValue != currentValue) {
             currentValue = std::max(0, std::min(100, newValue));
             updateHandlePosition();
+            createLabelTexture(SDL_GetRenderer(SDL_GetMouseFocus()), font);
             valueChanged = true;
         }
     }
@@ -90,7 +99,9 @@ void Slider::createLabelTexture(SDL_Renderer* renderer, TTF_Font* font) {
         SDL_DestroyTexture(labelTexture);
         labelTexture = nullptr;
     }
-
+    if (!font||!renderer) {
+        return;
+    }
     std::string displayText = label + ": " + std::to_string(currentValue) + "%";
 
     SDL_Color textColor = {255, 255, 255, 255};
@@ -98,7 +109,7 @@ void Slider::createLabelTexture(SDL_Renderer* renderer, TTF_Font* font) {
     if (surface) {
         labelTexture = SDL_CreateTextureFromSurface(renderer, surface);
 
-        labelRect.x = sliderRect.x - surface->w - 10;
+        labelRect.x = sliderRect.x - surface->w - 20;
         labelRect.y = sliderRect.y - 5;
         labelRect.w = surface->w;
         labelRect.h = surface->h;

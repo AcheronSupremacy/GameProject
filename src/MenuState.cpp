@@ -38,13 +38,13 @@ void MenuState::enter() {
         game->getStateManager()->changeState("instructions");
     });
 
-    buttons.emplace_back(w/2 - 100, h/2 + 45, 200, 50, "Settings",
+    buttons.emplace_back(w/2 - 100, h/2 + 50, 200, 50, "Settings",
                       SDL_Color{150, 150, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
         game->getStateManager()->changeState("settings");
     });
 
-    buttons.emplace_back(w/2 - 100, h/2 + 50, 200, 50, "Exit",
+    buttons.emplace_back(w/2 - 100, h/2 + 100, 200, 50, "Exit",
                         SDL_Color{150, 50, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
         SDL_Event quitEvent;

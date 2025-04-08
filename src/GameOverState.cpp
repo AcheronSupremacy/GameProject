@@ -16,7 +16,8 @@ void GameOverState::enter() {
     if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
-    AudioManager::getInstance().playSoundEffect("lose");
+    AudioManager::getInstance().stopMusic();
+    AudioManager::getInstance().playSoundEffect("game_over");
 
     SDL_Color textColor = {255, 50, 50, 255};
     SDL_Surface* gameOverSurface = TTF_RenderText_Blended(titleFont, "GAME OVER", textColor);
@@ -36,6 +37,7 @@ void GameOverState::enter() {
     buttons.emplace_back(w/2 - 100, h/2 + 100, 200, 50, "Restart Level",
                         SDL_Color{100, 100, 150, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
+        AudioManager::getInstance().playMusic("bg_music", -1);
         game->getStateManager()->clearAndSetState("play");
     });
 
