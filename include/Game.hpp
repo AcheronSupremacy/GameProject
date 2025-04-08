@@ -8,6 +8,8 @@
 #include "SDL2/SDL.h"
 #include "string"
 #include "Player.hpp"
+#include "GameState.hpp"
+class GameStateManager;
 
 class Game {
 public:
@@ -21,26 +23,18 @@ public:
     void clean() const;
     float calculateDeltaTime();
     [[nodiscard]] bool running() const { return this->is_running; }
+
+    int getWindowWidth() const { return windowWidth; }
+    int getWindowHeight() const { return windowHeight; }
+    SDL_Renderer* getRenderer() const { return renderer; }
+    GameStateManager* getStateManager() const { return stateManager.get(); }
 private:
     bool is_running;
     int windowWidth;
     int windowHeight;
     SDL_Window *window;
     SDL_Renderer *renderer;
-    Player* player;
-    std::vector<Platform> platforms;
-
-    SDL_Rect camera;
-    float previousCameraX = 0;
-    float cameraSmoothing = 0.5f;
-
-    SDL_Texture* playerTexture;
-    SDL_Texture* platformTexture;
-
-    void loadLevel();
-    void centerCameraOnPlayer();
-
-    Background* background;
+    std::unique_ptr<GameStateManager> stateManager;
 };
 const int LEVEL_WIDTH = 2560;
 const int LEVEL_HEIGHT = 720;

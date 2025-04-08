@@ -24,6 +24,13 @@ add_executable(${PROJECT_NAME} src/main.cpp
         include/Button.hpp
         include/Background.hpp
         src/Background.cpp
+        include/MenuState.hpp
+        include/PlayState.hpp
+        include/PauseState.hpp
+        src/MenuState.cpp
+        src/PlayState.cpp
+        src/PauseState.cpp
+        src/Button.cpp
 )
 
 if (CMAKE_BUILD_TYPE MATCHES Release)

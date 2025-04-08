@@ -25,6 +25,8 @@ public:
     void setColors(SDL_Color bgNormal, SDL_Color bgHover, SDL_Color bgPressed);
     void setText(const std::string& text, SDL_Renderer* renderer, TTF_Font* font);
 
+    std::string getText() const;
+
     void setCallback(std::function<void()> onClick);
 
 private:

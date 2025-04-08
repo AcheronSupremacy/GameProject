@@ -1,0 +1,96 @@
+//
+// Created by ACER on 4/8/2025.
+//
+// src/PlayState.cpp
+#include "PlayState.hpp"
+#include "Game.hpp"
+#include <iostream>
+
+PlayState::PlayState() =default;
+
+
+void PlayState::enter() {
+    std::cout << "Entering Play State" << std::endl;
+
+    player = new Player(100, 100, 32, 32);
+
+    background = new Background(game->getRenderer(), game->getWindowWidth(), game->getWindowHeight());
+    background->addLayer("assets/background/background_layer_1.png", 0.05f);
+    background->addLayer("assets/background/background_layer_2.png", 0.1f);
+    background->addLayer("assets/background/background_layer_3.png", 0.2f);
+
+    camera = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
+    previousCameraX = 0;
+
+    // Load level
+    loadLevel();
+}
+
+void PlayState::exit() {
+    std::cout << "Exiting Play State" << std::endl;
+
+    if (player) {
+        delete player;
+        player = nullptr;
+    }
+
+    if (background) {
+        delete background;
+        background = nullptr;
+    }
+
+    platforms.clear();
+}
+
+void PlayState::loadLevel() {
+    platforms.emplace_back(0, LEVEL_HEIGHT - 50, LEVEL_WIDTH, 50);
+    platforms.emplace_back(300, 600, 200, 20);
+    platforms.emplace_back(600, 500, 200, 20);
+    platforms.emplace_back(900, 400, 200, 20);
+    platforms.emplace_back(1200, 300, 200, 20);
+}
+
+void PlayState::centerCameraOnPlayer() {
+    int targetX = player->rect.x - game->getWindowWidth() / 2;
+
+    if (player->getIsDashing()) {
+        camera.x = camera.x + (targetX - camera.x) * cameraSmoothing;
+    } else {
+        camera.x = targetX;
+    }
+
+    if (camera.x < 0) {
+        camera.x = 0;
+    } else if (camera.x > LEVEL_WIDTH - camera.w) {
+        camera.x = LEVEL_WIDTH - camera.w;
+    }
+
+    camera.y = 0;
+}
+
+void PlayState::handleEvents(SDL_Event& e) {
+    if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+        game->getStateManager()->changeState("pause");
+    }
+}
+
+void PlayState::update(float deltaTime) {
+    player->handleInput();
+    player->update(deltaTime, platforms);
+
+    centerCameraOnPlayer();
+
+    float cameraDeltaX = camera.x - previousCameraX;
+    previousCameraX = camera.x;
+    background->update(cameraDeltaX);
+}
+
+void PlayState::render(SDL_Renderer* renderer) {
+    background->render();
+
+    for (auto& platform : platforms) {
+        platform.render(renderer, camera);
+    }
+
+    player->render(renderer, camera);
+}

@@ -82,8 +82,8 @@ void Player::handleInput() {
     const Uint8* keystates = SDL_GetKeyboardState(nullptr);
     static bool spaceWasReleased = true;
     static bool shiftWasReleased = true;
-    if (keystates[SDL_SCANCODE_A]) velocityX = -moveSpeed;
-    else if (keystates[SDL_SCANCODE_D]) velocityX = moveSpeed;
+    if (keystates[SDL_SCANCODE_LEFT]) velocityX = -moveSpeed;
+    else if (keystates[SDL_SCANCODE_RIGHT]) velocityX = moveSpeed;
     else velocityX = 0;
 
     if (keystates[SDL_SCANCODE_SPACE]) {
