@@ -39,7 +39,7 @@ private:
     const float moveSpeed = 5.0f;
     const float dashSpeed = 15.0f;
     const float dashDuration = 0.2f;
-    const float dashCooldown = 0.5f;
+    const float dashCooldown = 1.0f;
     
     bool isOnGround = false;
     bool isDashing = false;

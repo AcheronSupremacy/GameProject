@@ -12,7 +12,7 @@ GameOverState::GameOverState() = default;
 
 void GameOverState::enter() {
     font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
-    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 100);
+    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 60);
     if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
@@ -20,7 +20,7 @@ void GameOverState::enter() {
     AudioManager::getInstance().playSoundEffect("game_over");
 
     SDL_Color textColor = {255, 50, 50, 255};
-    SDL_Surface* gameOverSurface = TTF_RenderText_Blended(titleFont, "GAME OVER", textColor);
+    SDL_Surface* gameOverSurface = TTF_RenderText_Blended(titleFont, "GAME OVER! YOU HAVE SKILL ISSUE", textColor);
     if (gameOverSurface) {
         gameOverTextTexture = SDL_CreateTextureFromSurface(game->getRenderer(), gameOverSurface);
         gameOverTextWidth = gameOverSurface->w;

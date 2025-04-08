@@ -34,7 +34,7 @@ void Game::init(const std::string &title, const int w, const int h) {
 #endif
     if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
         this->window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_SHOWN);
-        this->renderer = SDL_CreateRenderer(this->window, -1, 0);
+        this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         this->is_running = true;
     } else {
         this->is_running = false;

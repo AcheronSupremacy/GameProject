@@ -11,7 +11,7 @@ LevelCompleteState::LevelCompleteState() = default;
 
 void LevelCompleteState::enter() {
     font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
-    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 100);
+    titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 60);
     if (!font||!titleFont) {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
@@ -19,7 +19,7 @@ void LevelCompleteState::enter() {
     AudioManager::getInstance().playSoundEffect("level_complete");
 
     SDL_Color textColor = {50, 255, 50, 255};
-    SDL_Surface* completedSurface = TTF_RenderText_Blended(titleFont, "LEVEL CLEARED!", textColor);
+    SDL_Surface* completedSurface = TTF_RenderText_Blended(titleFont, "LEVEL CLEARED! YOU DON'T HAVE SKILL ISSUE", textColor);
     if (completedSurface) {
         completedTextTexture = SDL_CreateTextureFromSurface(game->getRenderer(), completedSurface);
         completedTextWidth = completedSurface->w;
