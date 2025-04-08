@@ -15,13 +15,6 @@ void LevelCompleteState::enter() {
         std::cerr << "Failed to load font: " << TTF_GetError() << std::endl;
     }
 
-    overlayTexture = SDL_CreateTexture(game->getRenderer(), SDL_PIXELFORMAT_RGBA8888,
-                                    SDL_TEXTUREACCESS_TARGET, game->getWindowWidth(), game->getWindowHeight());
-    SDL_SetTextureBlendMode(overlayTexture, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderTarget(game->getRenderer(), overlayTexture);
-    SDL_SetRenderDrawColor(game->getRenderer(), 0, 0, 0, 150);
-    SDL_RenderClear(game->getRenderer());
-    SDL_SetRenderTarget(game->getRenderer(), nullptr);
 
     SDL_Color textColor = {50, 255, 50, 255};
     SDL_Surface* completedSurface = TTF_RenderText_Blended(titleFont, "LEVEL CLEARED!", textColor);
@@ -53,10 +46,6 @@ void LevelCompleteState::enter() {
 }
 
 void LevelCompleteState::exit() {
-    if (overlayTexture) {
-        SDL_DestroyTexture(overlayTexture);
-        overlayTexture = nullptr;
-    }
 
     if (completedTextTexture) {
         SDL_DestroyTexture(completedTextTexture);
@@ -78,11 +67,14 @@ void LevelCompleteState::handleEvents(SDL_Event& e) {
 }
 
 void LevelCompleteState::update(float deltaTime) {
-    // No animation or updates needed
 }
 
 void LevelCompleteState::render(SDL_Renderer* renderer) {
-    SDL_RenderCopy(renderer, overlayTexture, nullptr, nullptr);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150); // Semi-transparent black
+    SDL_Rect fullScreen = {0, 0, game->getWindowWidth(), game->getWindowHeight()};
+    SDL_RenderFillRect(renderer, &fullScreen);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     if (completedTextTexture) {
         int w = game->getWindowWidth();
