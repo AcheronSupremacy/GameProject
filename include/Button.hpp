@@ -23,7 +23,7 @@ public:
     void render(SDL_Renderer* renderer);
 
     void setColors(SDL_Color bgNormal, SDL_Color bgHover, SDL_Color bgPressed);
-    void setText(const std::string& text, SDL_Renderer* renderer, TTF_Font* font);
+    void setText(const std::string& text, SDL_Renderer* renderer);
 
     std::string getText() const;
 

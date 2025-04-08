@@ -5,12 +5,12 @@
 #include <iostream>
 
 Slider::Slider(int x, int y, int width, int height,
-               const std::string& labelText, TTF_Font* font,
+               const std::string& labelText,
                SDL_Color sliderColor, SDL_Color handleColor)
     : sliderRect{x, y, width, height},
       handleRect{x, y - height/2, height*2, height*2},
       label(labelText),
-      font(font),
+      font(TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24)),
       sliderColor(sliderColor),
       handleColor(handleColor),
       labelTexture(nullptr) {
@@ -45,42 +45,66 @@ void Slider::render(SDL_Renderer* renderer) {
 bool Slider::handleEvent(SDL_Event& e) {
     bool valueChanged = false;
 
-    if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
-        int x = e.button.x;
-        int y = e.button.y;
-        SDL_Point point = {x, y};
-        if (SDL_PointInRect(&point, &handleRect) ||
-            SDL_PointInRect(&point, &sliderRect)) {
-            isDragging = true;
-
-            int newValue = 100 * (x - sliderRect.x) / sliderRect.w;
-            if (newValue != currentValue) {
-                currentValue = std::max(0, std::min(100, newValue));
-                updateHandlePosition();
-                createLabelTexture(SDL_GetRenderer(SDL_GetMouseFocus()), font);
-                valueChanged = true;
-            }
-            }
+    if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT && isDragging) {
+        isDragging = false;
+        return true;
     }
-    else if (e.type == SDL_MOUSEMOTION && isDragging) {
-        int x = e.motion.x;
 
-        int newValue = 100 * (x - sliderRect.x) / sliderRect.w;
+    int mouseX = 0, mouseY = 0;
+    
+    if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+        mouseX = e.button.x;
+        mouseY = e.button.y;
+    } 
+    else if (e.type == SDL_MOUSEMOTION) {
+        mouseX = e.motion.x;
+        mouseY = e.motion.y;
+
+        if (!isDragging) {
+            return false;
+        }
+    }
+    else {
+        return false;
+    }
+
+    SDL_Point mousePoint = {mouseX, mouseY};
+
+    bool mouseInsideSlider = SDL_PointInRect(&mousePoint, &sliderRect);
+    bool mouseInsideHandle = SDL_PointInRect(&mousePoint, &handleRect);
+
+    if (e.type == SDL_MOUSEBUTTONDOWN) {
+        if (!(mouseInsideHandle || mouseInsideSlider)) {
+            return false;
+        }
+        
+        isDragging = true;
+
+        int newValue = 100 * (mouseX - sliderRect.x) / sliderRect.w;
+        newValue = std::max(0, std::min(100, newValue)); // Constrain to valid range
+        
         if (newValue != currentValue) {
-            currentValue = std::max(0, std::min(100, newValue));
+            currentValue = newValue;
             updateHandlePosition();
-            createLabelTexture(SDL_GetRenderer(SDL_GetMouseFocus()), font);
             valueChanged = true;
         }
     }
-    else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT) {
-        isDragging = false;
+    else if (e.type == SDL_MOUSEMOTION && isDragging) {
+        int constrainedX = std::max(sliderRect.x, std::min(sliderRect.x + sliderRect.w, mouseX));
+        int newValue = 100 * (constrainedX - sliderRect.x) / sliderRect.w;
+        newValue = std::max(0, std::min(100, newValue)); // Constrain to valid range
+        
+        if (newValue != currentValue) {
+            currentValue = newValue;
+            updateHandlePosition();
+            valueChanged = true;
+        }
     }
 
     if (valueChanged && valueChangedCallback) {
         valueChangedCallback(currentValue);
     }
-
+    
     return valueChanged;
 }
 
@@ -116,4 +140,8 @@ void Slider::createLabelTexture(SDL_Renderer* renderer, TTF_Font* font) {
 
         SDL_FreeSurface(surface);
     }
+}
+
+void Slider::stopDragging() {
+    isDragging = false;
 }

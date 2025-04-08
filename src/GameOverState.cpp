@@ -48,7 +48,7 @@ void GameOverState::enter() {
     });
 
     for (auto& button : buttons) {
-        button.setText(button.getText(), game->getRenderer(), font);
+        button.setText(button.getText(), game->getRenderer());
     }
 }
 

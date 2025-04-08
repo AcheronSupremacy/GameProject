@@ -1,7 +1,6 @@
 //
 // Created by ACER on 4/8/2025.
 //
-// src/PlayState.cpp
 #include "PlayState.hpp"
 #include "Game.hpp"
 #include <iostream>

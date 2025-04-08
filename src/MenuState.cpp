@@ -53,7 +53,7 @@ void MenuState::enter() {
     });
 
     for (auto& button : buttons) {
-        button.setText(button.getText(), game->getRenderer(), font);
+        button.setText(button.getText(), game->getRenderer());
     }
 
     backgroundTexture1 = TextureManager::LoadTexture("assets/background/background_layer_1.png", game->getRenderer());

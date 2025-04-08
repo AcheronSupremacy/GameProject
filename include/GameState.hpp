@@ -82,6 +82,7 @@ public:
     }
     void clearAndSetState(const std::string& name) {
         while (!stateStack.empty()) {
+            SDL_LogVerbose(0, "Exiting state: %s", stateNames.back().c_str());
             stateStack.back()->exit();
             stateStack.pop_back();
             stateNames.pop_back();

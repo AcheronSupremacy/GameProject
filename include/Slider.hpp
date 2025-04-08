@@ -14,7 +14,7 @@
 class Slider {
 public:
     Slider(int x, int y, int width, int height,
-           const std::string& labelText, TTF_Font* font,
+           const std::string& labelText,
            SDL_Color sliderColor, SDL_Color handleColor);
     ~Slider();
 
@@ -26,6 +26,7 @@ public:
 
     void setCallback(std::function<void(int)> callback) { valueChangedCallback = callback; }
     void createLabelTexture(SDL_Renderer* renderer, TTF_Font* font);
+    void stopDragging();
 private:
     SDL_Rect sliderRect;
     SDL_Rect handleRect;

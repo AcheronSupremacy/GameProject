@@ -10,6 +10,7 @@
 SettingsState::SettingsState() = default;
 
 void SettingsState::enter() {
+    SDL_LogVerbose(0, "Entering settings state");
     font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
     titleFont = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 60);
     if (!font || !titleFont) {
@@ -24,13 +25,13 @@ void SettingsState::enter() {
 
     musicVolumeSlider = std::make_unique<Slider>(
         w/2 - 150, h/2 - 50, 300, 20,
-        "Music Volume", font,
+        "Music Volume",
         SDL_Color{100, 100, 150, 255}, SDL_Color{200, 200, 255, 255}
     );
 
     sfxVolumeSlider = std::make_unique<Slider>(
         w/2 - 150, h/2 + 50, 300, 20,
-        "SFX Volume", font,
+        "SFX Volume",
         SDL_Color{100, 150, 100, 255}, SDL_Color{200, 255, 200, 255}
     );
 
@@ -53,24 +54,24 @@ void SettingsState::enter() {
     buttons.emplace_back(w/2 - 200, h - 100, 180, 50, "Back",
                         SDL_Color{150, 50, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
+        SDL_LogVerbose(0, "Exiting settings: Music Volume: %d, SFX Volume: %d", originalMusicVolume, originalSfxVolume);
         AudioManager::getInstance().setMusicVolume(originalMusicVolume);
         AudioManager::getInstance().setEffectVolume(originalSfxVolume);
-
-        game->getStateManager()->popState();
+        game->getStateManager()->clearAndSetState("menu");
     });
 
     buttons.emplace_back(w/2 + 20, h - 100, 180, 50, "Apply",
                         SDL_Color{50, 150, 50, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
+        SDL_LogVerbose(0, "Applying settings: Music Volume: %d, SFX Volume: %d", originalMusicVolume, originalSfxVolume);
         originalMusicVolume = AudioManager::getInstance().getMusicVolume();
         originalSfxVolume = AudioManager::getInstance().getEffectVolume();
-
-        game->getStateManager()->popState();
+        game->getStateManager()->clearAndSetState("menu");
     });
 
     for (auto& button : buttons) {
         if (font) {
-            button.setText(button.getText(), game->getRenderer(), font);
+            button.setText(button.getText(), game->getRenderer());
         }
     }
 
@@ -79,34 +80,31 @@ void SettingsState::enter() {
 
 void SettingsState::exit() {
     buttons.clear();
+    SDL_LogVerbose(0, "Exiting settings state");
 
     musicVolumeSlider.reset();
     sfxVolumeSlider.reset();
+    
+    SDL_LogVerbose(0, "Released settings sliders");
 
-    if (titleFont) {
-        TTF_CloseFont(titleFont);
-        titleFont = nullptr;
-    }
-
-    if (font) {
-        TTF_CloseFont(font);
-        font = nullptr;
-    }
 }
 
 void SettingsState::handleEvents(SDL_Event& e) {
     for (auto& button : buttons) {
-        button.handleEvent(e);
+        if (button.handleEvent(e)) {
+
+            return;
+        }
     }
 
     if (musicVolumeSlider) {
-        if (musicVolumeSlider->handleEvent(e) && font) {
+        if (musicVolumeSlider->handleEvent(e)) {
             musicVolumeSlider->createLabelTexture(game->getRenderer(), font);
         }
     }
 
     if (sfxVolumeSlider) {
-        if (sfxVolumeSlider->handleEvent(e) && font) {
+        if (sfxVolumeSlider->handleEvent(e)) {
             sfxVolumeSlider->createLabelTexture(game->getRenderer(), font);
         }
     }

@@ -1,7 +1,6 @@
 //
 // Created by ACER on 4/8/2025.
 //
-// src/Button.cpp
 #include "Button.hpp"
 #include <iostream>
 
@@ -90,14 +89,14 @@ void Button::render(SDL_Renderer* renderer) {
     }
 }
 
-void Button::setText(const std::string& newText, SDL_Renderer* renderer, TTF_Font* font) {
+void Button::setText(const std::string& newText, SDL_Renderer* renderer) {
     text = newText;
 
     if (textTexture) {
         SDL_DestroyTexture(textTexture);
         textTexture = nullptr;
     }
-
+    auto font = TTF_OpenFont("assets/PixelifySans-Regular.ttf", 24);
     if (font) {
         SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), textColor);
         if (surface) {
@@ -112,6 +111,7 @@ void Button::setText(const std::string& newText, SDL_Renderer* renderer, TTF_Fon
     } else {
         std::cerr << "Font is null when setting text: " << text << std::endl;
     }
+    TTF_CloseFont(font);
 }
 
 void Button::setColors(SDL_Color normal, SDL_Color hover, SDL_Color pressed) {

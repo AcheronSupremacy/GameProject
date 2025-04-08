@@ -1,9 +1,6 @@
 //
 // Created by ACER on 4/8/2025.
 //
-//
-// Created by ACER on 4/8/2025.
-//
 
 #include "InstructionState.hpp"
 #include "Game.hpp"
@@ -30,11 +27,11 @@ void InstructionState::enter() {
     buttons.emplace_back(w/2 - 100, h - 100, 200, 50, "Back",
                         SDL_Color{100, 100, 150, 255}, SDL_Color{255, 255, 255, 255});
     buttons.back().setCallback([this]() {
-        game->getStateManager()->changeState("menu");
+        game->getStateManager()->clearAndSetState("menu");
     });
 
     for (auto& button : buttons) {
-        button.setText(button.getText(), game->getRenderer(), instructionFont);
+        button.setText(button.getText(), game->getRenderer());
     }
 
     createInstructionTexts();
@@ -78,17 +75,6 @@ void InstructionState::createInstructionTexts() {
 }
 
 void InstructionState::exit() {
-
-    if (titleFont) {
-        TTF_CloseFont(titleFont);
-        titleFont = nullptr;
-    }
-
-    if (instructionFont) {
-        TTF_CloseFont(instructionFont);
-        instructionFont = nullptr;
-    }
-
     for (auto& instruction : instructions) {
         if (instruction.texture) {
             SDL_DestroyTexture(instruction.texture);
@@ -96,7 +82,6 @@ void InstructionState::exit() {
         }
     }
     instructions.clear();
-
     buttons.clear();
 }
 

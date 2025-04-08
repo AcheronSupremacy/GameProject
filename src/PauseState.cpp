@@ -1,7 +1,7 @@
 //
 // Created by ACER on 4/8/2025.
 //
-// src/PauseState.cpp
+
 #include "PauseState.hpp"
 #include "Game.hpp"
 #include "SDL_ttf.h"
@@ -34,7 +34,7 @@ void PauseState::enter() {
     });
 
     for (auto& button : buttons) {
-        button.setText(button.getText(), game->getRenderer(), font);
+        button.setText(button.getText(), game->getRenderer());
     }
 }
 
